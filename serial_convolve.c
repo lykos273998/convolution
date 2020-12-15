@@ -217,23 +217,32 @@ void convolve_1B(unsigned char * source,int nrows,int ncols,float * kernel, int 
     printf("S %d \n", s);
     int img_index, k_index, res_index;
     //interior convolution
+    unsigned char tmp = source[2*s*ncols + 2*s];
     printf("Processing Interior\n");
-    for(int i = s; i < nrows - s; i++){
-        for(int j = s; j < ncols - s; j++){
-            res_index = i*ncols + j;
-            result[res_index] = 0;
-            //single element
-            for (int k_i = 0; k_i < kernel_size; k_i ++ ){
-              for (int k_j = 0; k_j < kernel_size; k_j ++ ){  
-                k_index = k_i * kernel_size + k_j;
-                img_index = (i + (k_i - s))*ncols + (j + (k_j - s));
-                result[res_index]+= kernel[k_index]*source[img_index];
-            }
-            }
+    
+    
+        
+            for(int i = s; i < nrows - s; i++){
+                for(int j = s ; j < ncols - s; j++){
+                    res_index = i*ncols + j;
+                    result[res_index] = 0;
+                    //single element
+                    //tmp = source[(i + s+1)*ncols + (j + s+1)];
+                    for (int k_i = 0; k_i < kernel_size; k_i ++ ){
+                    for (int k_j = 0; k_j < kernel_size; k_j ++ ){  
+                        k_index = k_i * kernel_size + k_j;
+                        img_index = (i + (k_i - s))*ncols + (j + (k_j - s));
+                        result[res_index]+= kernel[k_index]*source[img_index];
+                    }
+                    }
 
 
-    }  
-    }
+            }  
+            }
+           // printf("%hu", tmp);
+    
+
+    
     //halo up
     printf("Processing HALO UP\n");
     int k_i_start, k_i_end, k_j_start, k_j_end;
@@ -320,6 +329,7 @@ void convolve_1B(unsigned char * source,int nrows,int ncols,float * kernel, int 
 
         }
     }  
+    
 
     printf("Processing finished successfully!\n");
 }
