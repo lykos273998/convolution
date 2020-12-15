@@ -138,7 +138,7 @@ void print_kernel(float *matrix, unsigned int nrows){
     unsigned int ncols = nrows;
     for (unsigned int i = 0; i < nrows; i++){
         for (unsigned int j = 0; j < ncols; j++){
-            printf("%f ", matrix[i*ncols+j] );
+            printf("%f ", matrix[i*ncols+j]);
         }
         printf("\n");
     }
@@ -216,26 +216,29 @@ void convolve(short int * source,int nrows,int ncols,float * kernel, int kernel_
 void convolve_1B(unsigned char * source,int nrows,int ncols,float * kernel, int kernel_size, unsigned char *result){
     int s = kernel_size/2;
     //printf("S %d \n", s);
-    int img_index, k_index, res_index;
+    
     //interior convolution
-    int stride = 16;
+    int stride = 100;
     #pragma omp parallel 
     {
+    
     //printf("Processing Interior\n");
     //int ns = nrows/omp_get_num_threads();
     int ns = 100;
-    #pragma omp for 
+    #pragma omp single
+    {
     for (int cc = s; cc < nrows - s - ns; cc+=ns){
-        //printf("THREAD %d IS STARTING FROM %d \n", omp_get_thread_num(), cc);
-    for(int i = cc; i < cc+ns; i++){
-        for(int j = cc ; j < ncols; j++){
-            res_index = i*ncols + j;
+        #pragma omp task
+        {
+    for(int i = cc; i < cc + ns; i++){
+        for(int j = s ; j < ncols - s; j++){
+            int res_index = i*ncols + j;
             result[res_index] = 0;
             //single element
             for (int k_i = 0; k_i < kernel_size; k_i ++ ){
               for (int k_j = 0; k_j < kernel_size; k_j ++ ){  
-                k_index = k_i * kernel_size + k_j;
-                img_index = (i + (k_i - s))*ncols + (j + (k_j - s));
+                int k_index = k_i * kernel_size + k_j;
+                int img_index = (i + (k_i - s))*ncols + (j + (k_j - s));
                 result[res_index]+= kernel[k_index]*source[img_index];
             }
             }
@@ -244,12 +247,15 @@ void convolve_1B(unsigned char * source,int nrows,int ncols,float * kernel, int 
     }  
     }
     }
-    
+    }
+    }
+    int img_index, k_index, res_index;
     //halo up
     //printf("Processing HALO UP\n");
     int k_i_start, k_i_end, k_j_start, k_j_end;
-    #pragma omp for
     
+    #pragma omp task
+    {
     for(int i = 0; i <s; i++){
         for(int j = s; j < ncols - s; j++){
             res_index = i*ncols + j;
@@ -269,10 +275,12 @@ void convolve_1B(unsigned char * source,int nrows,int ncols,float * kernel, int 
 
         }
     }  
+    }
     //halo down
     //printf("Processing HALO DOWN\n");
-    #pragma omp for
     
+    #pragma omp task
+    {
     for(int i = nrows - s; i < nrows; i++){
         for(int j = s; j < ncols - s; j++){
             res_index = i*ncols + j;
@@ -292,10 +300,12 @@ void convolve_1B(unsigned char * source,int nrows,int ncols,float * kernel, int 
 
         }
     }  
+    }
 
     //halo left
     //printf("Processing HALO LEFT\n");
-    #pragma omp for 
+    #pragma omp task
+    {
     for(int i = s; i < nrows - s; i++){
         for(int j = 0; j < s; j++){
             res_index = i*ncols + j;
@@ -315,9 +325,11 @@ void convolve_1B(unsigned char * source,int nrows,int ncols,float * kernel, int 
 
         }
     }  
+    }
     //halo right
     //printf("Processing HALO RIGHT\n");
-    #pragma omp for 
+    #pragma omp task
+    {
     for(int i = s; i < nrows - s; i++){
         for(int j = ncols - s; j < ncols; j++){
             res_index = i*ncols + j;
@@ -338,6 +350,7 @@ void convolve_1B(unsigned char * source,int nrows,int ncols,float * kernel, int 
         }
     }  
     
+    }
     }
     
     printf("Processing finished successfully!\n");

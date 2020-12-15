@@ -40,7 +40,7 @@ void write_to_pgm3(unsigned char *mat,int nrows,int ncols, int max){
 
 void write_to_pgm_1B(unsigned char *mat,int nrows,int ncols, int max){
     FILE* pgmimg;
-    pgmimg = fopen("out.PGM", "wb"); //write the file in binary mode
+    pgmimg = fopen("serial_out.PGM", "wb"); //write the file in binary mode
     fprintf(pgmimg, "P5\n"); // Writing Magic Number to the File
     fprintf(pgmimg, "%d %d\n", ncols, nrows); // Writing Width and Height into the file
     fprintf(pgmimg, "255\n"); // Writing the maximum gray value
