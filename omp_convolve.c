@@ -444,6 +444,8 @@ void convolve_1B(unsigned char * source,int nrows,int ncols,float * kernel, int 
 
 
     }
+    
+    
     }
     
     printf("Processing finished successfully!\n");
@@ -520,8 +522,8 @@ int main(int argc, char**argv){
 
     }
 
-    printf("---KERNEL---\n");
-    print_kernel(kernel,kernel_size);
+    //printf("---KERNEL---\n");
+    //print_kernel(kernel,kernel_size);
     
     int N_BYTES = spy(input_file);
 
