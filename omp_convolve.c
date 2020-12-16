@@ -538,7 +538,7 @@ int main(int argc, char**argv){
         break;
     }
 
-    //system("eog out.PGM");
+    //system("eog out.PGM") cc;
     free(kernel);
     return 0;
     
