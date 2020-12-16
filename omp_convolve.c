@@ -168,7 +168,7 @@ void convolve_1B(unsigned char * source,int nrows,int ncols,float * kernel, int 
     int ns = 100;
     #pragma omp single
     {
-    printf("Processing Interior\n");
+    //printf("Processing Interior\n");
     for (int cc = s; cc < nrows - s; cc+=ns){
         #pragma omp task
         {
