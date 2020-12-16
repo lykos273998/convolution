@@ -40,7 +40,7 @@ void write_to_pgm3(unsigned char *mat,int nrows,int ncols, int max){
 
 void write_to_pgm_1B(unsigned char *mat,int nrows,int ncols, int max){
     FILE* pgmimg;
-    pgmimg = fopen("serial_out.PGM", "wb"); //write the file in binary mode
+    pgmimg = fopen("out.PGM", "wb"); //write the file in binary mode
     fprintf(pgmimg, "P5\n"); // Writing Magic Number to the File
     fprintf(pgmimg, "%d %d\n", ncols, nrows); // Writing Width and Height into the file
     fprintf(pgmimg, "255\n"); // Writing the maximum gray value
@@ -60,48 +60,6 @@ void write_to_pgm_2B(short int *mat,int nrows,int ncols, int max){
 
 }
 
-void read_pgm(short int* image, int* nr, int* nc, int* m, char* filename){
-    FILE* pgm_file;
-    pgm_file = fopen(filename,"rb");
-    int nrows,ncols,max;
-    char MAGIC[2];
-    fscanf(pgm_file,"%s", MAGIC);
-    fscanf(pgm_file,"%d", &ncols);
-    fscanf(pgm_file,"%d", &nrows);
-    fscanf(pgm_file,"%d", &max);
-
-    image = (short int*)malloc(nrows*ncols*sizeof(short int));
-    printf("file opened %s\n%d %d\n%d \n", MAGIC, nrows, ncols, max);
-    for(int i = 0; i < nrows; i++){
-        for(int j = 0; j < ncols; j++){
-            fscanf(pgm_file,"%hd ",image+(i*ncols+j));          
-        }
-        //fscanf(pgm_file,"%hd\n",image+(i*ncols + (ncols - 1)));
-    }
-    printf("Imported\n");
-    *nr = nrows;
-    *nc=ncols;
-    *m = max;
-
-}
-void read_pgm2(short int* image, int* nr, int* nc, int* m, char* filename){
-    FILE* pgm_file;
-    pgm_file = fopen(filename,"rb");
-    int nrows,ncols,max;
-    char MAGIC[2];
-    fscanf(pgm_file,"%s", MAGIC);
-    fscanf(pgm_file,"%d", &nrows);
-    fscanf(pgm_file,"%d", &ncols);
-    fscanf(pgm_file,"%d", &max);
-
-    image = (short int*)malloc(nrows*ncols*sizeof(short int));
-    printf("file opened %s\n%d %d\n%d \n", MAGIC, nrows, ncols, max);
-    fread(image, sizeof(short int), nrows*ncols, pgm_file);
-
-    *nr = nrows;
-    *nc=ncols;
-    *m = max;
-}
 
 unsigned char* read_pgm_1B(int* nr, int* nc, int* m, char* filename){
     FILE* pgm_file;
@@ -188,36 +146,12 @@ void get_SHARPEN_kernel(float* kernel, unsigned int kernel_size){
     
 }
 
-
-
-void convolve(short int * source,int nrows,int ncols,float * kernel, int kernel_size, short int *result){
-    int s = kernel_size/2;
-    int img_index, k_index, res_index;
-    //interior convolution
-    for(int i = s; i < nrows - s; i++){
-        for(int j = s; j < ncols - s; j++){
-            res_index = i*ncols + j;
-            result[res_index] = 0;
-            //single element
-            for (int k_i = 0; k_i < kernel_size; k_i ++ ){
-              for (int k_j = 0; k_j < kernel_size; k_j ++ ){  
-                k_index = k_i * kernel_size + k_j;
-                img_index = (i + (k_i - s))*ncols + (j + (k_j - s));
-                result[res_index]+= kernel[k_index]*source[img_index];
-            }
-            }
-
-
-    }  
-    }    
-}
-
 void convolve_1B(unsigned char * source,int nrows,int ncols,float * kernel, int kernel_size, unsigned char *result){
     int s = kernel_size/2;
     printf("S %d \n", s);
     int img_index, k_index, res_index;
     //interior convolution
-    unsigned char tmp = source[2*s*ncols + 2*s];
+    //unsigned char tmp = source[2*s*ncols + 2*s];
     printf("Processing Interior\n");
     
     
@@ -227,14 +161,16 @@ void convolve_1B(unsigned char * source,int nrows,int ncols,float * kernel, int 
                     res_index = i*ncols + j;
                     result[res_index] = 0;
                     //single element
-                    //tmp = source[(i + s+1)*ncols + (j + s+1)];
+                    float tmp = 0.;
+                    //single element
                     for (int k_i = 0; k_i < kernel_size; k_i ++ ){
                     for (int k_j = 0; k_j < kernel_size; k_j ++ ){  
-                        k_index = k_i * kernel_size + k_j;
-                        img_index = (i + (k_i - s))*ncols + (j + (k_j - s));
-                        result[res_index]+= kernel[k_index]*source[img_index];
+                    int k_index = k_i * kernel_size + k_j;
+                    int img_index = (i + (k_i - s))*ncols + (j + (k_j - s));
+                    tmp+= kernel[k_index]*source[img_index];
                     }
                     }
+                    result[res_index] = tmp;
 
 
             }  
@@ -255,13 +191,16 @@ void convolve_1B(unsigned char * source,int nrows,int ncols,float * kernel, int 
             k_i_end = kernel_size;
             k_j_start = 0;
             k_j_end = kernel_size;
-            for (int k_i = k_i_start; k_i < k_i_end; k_i ++ ){
-              for (int k_j = k_j_start; k_j < k_j_end; k_j ++ ){  
-                k_index = k_i * kernel_size + k_j;
-                img_index = (i + (k_i - s))*ncols + (j + (k_j - s));
-                result[res_index]+= kernel[k_index]*source[img_index];
+            float tmp = 0.;
+            //single element
+            for (int k_i = 0; k_i < kernel_size; k_i ++ ){
+            for (int k_j = 0; k_j < kernel_size; k_j ++ ){  
+                int k_index = k_i * kernel_size + k_j;
+                int img_index = (i + (k_i - s))*ncols + (j + (k_j - s));
+                tmp+= kernel[k_index]*source[img_index];
             }
             }
+            result[res_index] = tmp;
 
         }
     }  
@@ -276,13 +215,16 @@ void convolve_1B(unsigned char * source,int nrows,int ncols,float * kernel, int 
             k_i_end = s + (nrows - i);
             k_j_start = 0;
             k_j_end = kernel_size;
-            for (int k_i = k_i_start; k_i < k_i_end; k_i ++ ){
-              for (int k_j = k_j_start; k_j < k_j_end; k_j ++ ){  
-                k_index = k_i * kernel_size + k_j;
-                img_index = (i + (k_i - s))*ncols + (j + (k_j - s));
-                result[res_index]+= kernel[k_index]*source[img_index];
+            float tmp = 0.;
+            //single element
+            for (int k_i = 0; k_i < kernel_size; k_i ++ ){
+            for (int k_j = 0; k_j < kernel_size; k_j ++ ){  
+                int k_index = k_i * kernel_size + k_j;
+                int img_index = (i + (k_i - s))*ncols + (j + (k_j - s));
+                tmp+= kernel[k_index]*source[img_index];
             }
             }
+            result[res_index] = tmp;
 
         }
     }  
@@ -298,13 +240,16 @@ void convolve_1B(unsigned char * source,int nrows,int ncols,float * kernel, int 
             k_i_end = kernel_size;
             k_j_start = s - j;
             k_j_end = kernel_size;
-            for (int k_i = k_i_start; k_i < k_i_end; k_i ++ ){
-              for (int k_j = k_j_start; k_j < k_j_end; k_j ++ ){  
-                k_index = k_i * kernel_size + k_j;
-                img_index = (i + (k_i - s))*ncols + (j + (k_j - s));
-                result[res_index]+= kernel[k_index]*source[img_index];
+            float tmp = 0.;
+            //single element
+            for (int k_i = 0; k_i < kernel_size; k_i ++ ){
+            for (int k_j = 0; k_j < kernel_size; k_j ++ ){  
+                int k_index = k_i * kernel_size + k_j;
+                int img_index = (i + (k_i - s))*ncols + (j + (k_j - s));
+                tmp+= kernel[k_index]*source[img_index];
             }
             }
+            result[res_index] = tmp;
 
         }
     }  
@@ -319,16 +264,120 @@ void convolve_1B(unsigned char * source,int nrows,int ncols,float * kernel, int 
             k_i_end = kernel_size;
             k_j_start = 0;
             k_j_end = s + nrows - j;
-            for (int k_i = k_i_start; k_i < k_i_end; k_i ++ ){
-              for (int k_j = k_j_start; k_j < k_j_end; k_j ++ ){  
-                k_index = k_i * kernel_size + k_j;
-                img_index = (i + (k_i - s))*ncols + (j + (k_j - s));
-                result[res_index]+= kernel[k_index]*source[img_index];
+            float tmp = 0.;
+            //single element
+            for (int k_i = 0; k_i < kernel_size; k_i ++ ){
+            for (int k_j = 0; k_j < kernel_size; k_j ++ ){  
+                int k_index = k_i * kernel_size + k_j;
+                int img_index = (i + (k_i - s))*ncols + (j + (k_j - s));
+                tmp+= kernel[k_index]*source[img_index];
             }
             }
+            result[res_index] = tmp;
 
         }
     }  
+
+    //q UL
+
+    printf("Processing Q UP LEFT\n");
+    for(int i = 0; i < s; i++){
+        for(int j = 0; j < s; j++){
+            res_index = i*ncols + j;
+            result[res_index] = 0;
+            //single element
+            k_i_start = s - i;
+            k_i_end = kernel_size;
+            k_j_start = s - j;
+            k_j_end = kernel_size;
+            float tmp = 0.;
+            //single element
+            for (int k_i = 0; k_i < kernel_size; k_i ++ ){
+            for (int k_j = 0; k_j < kernel_size; k_j ++ ){  
+                int k_index = k_i * kernel_size + k_j;
+                int img_index = (i + (k_i - s))*ncols + (j + (k_j - s));
+                tmp+= kernel[k_index]*source[img_index];
+            }
+            }
+            result[res_index] = tmp;
+
+        }
+    }  
+
+    printf("Processing Q UP RIGHT\n");
+    for(int i = 0; i < s; i++){
+        for(int j = ncols - s; j < ncols; j++){
+            res_index = i*ncols + j;
+            result[res_index] = 0;
+            //single element
+            k_i_start = s - i;
+            k_i_end = kernel_size;
+            k_j_start = 0;
+            k_j_end = s + (ncols - j);
+            float tmp = 0.;
+            //single element
+            for (int k_i = 0; k_i < kernel_size; k_i ++ ){
+            for (int k_j = 0; k_j < kernel_size; k_j ++ ){  
+                int k_index = k_i * kernel_size + k_j;
+                int img_index = (i + (k_i - s))*ncols + (j + (k_j - s));
+                tmp+= kernel[k_index]*source[img_index];
+            }
+            }
+            result[res_index] = tmp;
+
+        }
+    }  
+
+
+    printf("Processing Q DOWN LEFT\n");
+    for(int i = nrows - s; i < nrows; i++){
+        for(int j = 0; j < s; j++){
+            res_index = i*ncols + j;
+            result[res_index] = 0;
+            //single element
+            k_i_start = 0;
+            k_i_end = s + (nrows -i);
+            k_j_start = s - j;
+            k_j_end = kernel_size;
+            float tmp = 0.;
+            //single element
+            for (int k_i = 0; k_i < kernel_size; k_i ++ ){
+            for (int k_j = 0; k_j < kernel_size; k_j ++ ){  
+                int k_index = k_i * kernel_size + k_j;
+                int img_index = (i + (k_i - s))*ncols + (j + (k_j - s));
+                tmp+= kernel[k_index]*source[img_index];
+            }
+            }
+            result[res_index] = tmp;
+
+        }
+    }  
+
+    printf("Processing Q DOWN RIGHT\n");
+    for(int i = nrows - s; i < nrows; i++){
+        for(int j = ncols - s; j < ncols; j++){
+            res_index = i*ncols + j;
+            result[res_index] = 0;
+            //single element
+            k_i_start = 0;
+            k_i_end = s + (nrows -i);
+            k_j_start = 0;
+            k_j_end = s + (ncols - j);
+            float tmp = 0.;
+            //single element
+            for (int k_i = 0; k_i < kernel_size; k_i ++ ){
+            for (int k_j = 0; k_j < kernel_size; k_j ++ ){  
+                int k_index = k_i * kernel_size + k_j;
+                int img_index = (i + (k_i - s))*ncols + (j + (k_j - s));
+                tmp+= kernel[k_index]*source[img_index];
+            }
+            }
+            result[res_index] = tmp;
+
+        }
+    }  
+
+
     
 
     printf("Processing finished successfully!\n");
