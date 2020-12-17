@@ -155,13 +155,14 @@ void get_SHARPEN_kernel(float* kernel, unsigned int kernel_size){
 
 
 void convolve_1B(unsigned char * source,int nrows,int ncols,float * kernel, int kernel_size, unsigned char *result){
-    int s = kernel_size/2;
+    
     //printf("S %d \n", s);
     
     //interior convolution
 
     #pragma omp parallel 
     {
+    int s = kernel_size/2;
     
     //printf("Processing Interior\n");
     //int ns = nrows/omp_get_num_threads();
