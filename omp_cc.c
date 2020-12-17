@@ -155,40 +155,40 @@ void get_SHARPEN_kernel(float* kernel, unsigned int kernel_size){
 
 
 void convolve_1B(unsigned char * source,int nrows,int ncols,float * kernel, int kernel_size, unsigned char *result){
-    int s = kernel_size/2;
+    
     //printf("S %d \n", s);
     
     //interior convolution
 
     #pragma omp parallel 
     {
+    int s = kernel_size/2;
     
     //printf("Processing Interior\n");
     //int ns = nrows/omp_get_num_threads();
-    int ns = 16;
+    int ns = 4;
     
     //printf("Processing Interior\n");
-    #pragma omp for nowait
-    for (int cc = s; cc < nrows - s; cc+=ns){
-            for(int i = cc; i < cc + ns; i++){
-                for(int j = s ; j < ncols - s; j++){
-                    int res_index = i*ncols + j;
-                    result[res_index] = 0;
-                    float tmp = 0.;
-                    //single element
-                    for (int k_i = 0; k_i < kernel_size; k_i ++ ){
-                    for (int k_j = 0; k_j < kernel_size; k_j ++ ){  
-                        int k_index = k_i * kernel_size + k_j;
-                        int img_index = (i + (k_i - s))*ncols + (j + (k_j - s));
-                        tmp+= kernel[k_index]*source[img_index];
-                    }
-                    }
-                    result[res_index] = tmp;
+    #pragma omp for        
+        for(int i = s; i < nrows - s; i++){
+            for(int j = s ; j < ncols - s; j++){
+            int res_index = i*ncols + j;
+            result[res_index] = 0;
+            float tmp = 0.;
+        //single element
+        for (int k_i = 0; k_i < kernel_size; k_i ++ ){
+        for (int k_j = 0; k_j < kernel_size; k_j ++ ){  
+            int k_index = k_i * kernel_size + k_j;
+            int img_index = (i + (k_i - s))*ncols + (j + (k_j - s));
+            tmp+= kernel[k_index]*source[img_index];
+        }
+        }
+        result[res_index] = tmp;
 
 
     }  
     }
-    }
+    
     
     
     //remainder
