@@ -401,7 +401,9 @@ void convolve_1B(unsigned char * source,int nrows,int ncols,float * kernel, int 
             for (int k_j = 0; k_j < kernel_size; k_j ++ ){  
                 int k_index = k_i * kernel_size + k_j;
                 int img_index = (i + (k_i - s))*ncols + (j + (k_j - s));
-                tmp+= kernel[k_index]*source[img_index];
+                float c1 = kernel[k_index];
+                float c2 = source[img_index];
+                tmp += c1*c2;
             }
             }
             result[res_index] = tmp;
