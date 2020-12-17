@@ -180,23 +180,23 @@ void convolve_1B(unsigned char * source,int nrows,int ncols,float * kernel, int 
     }
     
     
-    int img_index, k_index, res_index;
+    //int img_index, k_index, res_index;
     //halo up
     //printf("Processing HALO UP\n");
-    int k_i_start, k_i_end, k_j_start, k_j_end;
+    //int k_i_start, k_i_end, k_j_start, k_j_end;
     
     
     //printf("Processing HALO UP\n");
     #pragma omp for schedule(dynamic,ns) nowait
     for(int i = 0; i <s; i++){
         for(int j = s; j < ncols - s; j++){
-            res_index = i*ncols + j;
+            int res_index = i*ncols + j;
             result[res_index] = 0;
             //single element
-            k_i_start = s - i;
-            k_i_end = kernel_size;
-            k_j_start = 0;
-            k_j_end = kernel_size;
+            int k_i_start = s - i;
+            int k_i_end = kernel_size;
+            int k_j_start = 0;
+            int k_j_end = kernel_size;
             float tmp = 0.;
             //single element
             for (int k_i = 0; k_i < kernel_size; k_i ++ ){
@@ -218,13 +218,13 @@ void convolve_1B(unsigned char * source,int nrows,int ncols,float * kernel, int 
     #pragma omp for schedule(dynamic,ns) nowait
     for(int i = nrows - s; i < nrows; i++){
         for(int j = s; j < ncols - s; j++){
-            res_index = i*ncols + j;
+            int res_index = i*ncols + j;
             result[res_index] = 0;
             //single element
-            k_i_start = 0;
-            k_i_end = s + (nrows - i);
-            k_j_start = 0;
-            k_j_end = kernel_size;
+            int k_i_start = 0;
+            int k_i_end = s + (nrows - i);
+            int k_j_start = 0;
+            int k_j_end = kernel_size;
             float tmp = 0.;
             //single element
             for (int k_i = 0; k_i < kernel_size; k_i ++ ){
@@ -246,13 +246,13 @@ void convolve_1B(unsigned char * source,int nrows,int ncols,float * kernel, int 
     //printf("Processing HALO LEFT\n");
     for(int i = s; i < nrows - s; i++){
         for(int j = 0; j < s; j++){
-            res_index = i*ncols + j;
+            int res_index = i*ncols + j;
             result[res_index] = 0;
             //single element
-            k_i_start = 0;
-            k_i_end = kernel_size;
-            k_j_start = s - j;
-            k_j_end = kernel_size;
+            int k_i_start = 0;
+            int k_i_end = kernel_size;
+            int k_j_start = s - j;
+            int k_j_end = kernel_size;
             float tmp = 0.;
             //single element
             for (int k_i = 0; k_i < kernel_size; k_i ++ ){
@@ -274,13 +274,13 @@ void convolve_1B(unsigned char * source,int nrows,int ncols,float * kernel, int 
     #pragma omp for schedule(dynamic,ns) nowait
     for(int i = s; i < nrows - s; i++){
         for(int j = ncols - s; j < ncols; j++){
-            res_index = i*ncols + j;
+            int res_index = i*ncols + j;
             result[res_index] = 0;
             //single element
-            k_i_start = 0;
-            k_i_end = kernel_size;
-            k_j_start = 0;
-            k_j_end = s + nrows - j;
+            int k_i_start = 0;
+            int k_i_end = kernel_size;
+            int k_j_start = 0;
+            int k_j_end = s + nrows - j;
             float tmp = 0.;
             //single element
             for (int k_i = 0; k_i < kernel_size; k_i ++ ){
@@ -302,13 +302,13 @@ void convolve_1B(unsigned char * source,int nrows,int ncols,float * kernel, int 
     #pragma omp for schedule(dynamic,ns) nowait
     for(int i = 0; i < s; i++){
         for(int j = 0; j < s; j++){
-            res_index = i*ncols + j;
+            int res_index = i*ncols + j;
             result[res_index] = 0;
             //single element
-            k_i_start = s - i;
-            k_i_end = kernel_size;
-            k_j_start = s - j;
-            k_j_end = kernel_size;
+            int k_i_start = s - i;
+            int k_i_end = kernel_size;
+            int k_j_start = s - j;
+            int k_j_end = kernel_size;
             float tmp = 0.;
             //single element
             for (int k_i = 0; k_i < kernel_size; k_i ++ ){
@@ -329,13 +329,13 @@ void convolve_1B(unsigned char * source,int nrows,int ncols,float * kernel, int 
     #pragma omp for schedule(dynamic,ns) nowait
     for(int i = 0; i < s; i++){
         for(int j = ncols - s; j < ncols; j++){
-            res_index = i*ncols + j;
+            int res_index = i*ncols + j;
             result[res_index] = 0;
             //single element
-            k_i_start = s - i;
-            k_i_end = kernel_size;
-            k_j_start = 0;
-            k_j_end = s + (ncols - j);
+            int k_i_start = s - i;
+            int k_i_end = kernel_size;
+            int k_j_start = 0;
+            int k_j_end = s + (ncols - j);
             float tmp = 0.;
             //single element
             for (int k_i = 0; k_i < kernel_size; k_i ++ ){
@@ -356,13 +356,13 @@ void convolve_1B(unsigned char * source,int nrows,int ncols,float * kernel, int 
     #pragma omp for schedule(dynamic,ns) nowait
     for(int i = nrows - s; i < nrows; i++){
         for(int j = 0; j < s; j++){
-            res_index = i*ncols + j;
+            int res_index = i*ncols + j;
             result[res_index] = 0;
             //single element
-            k_i_start = 0;
-            k_i_end = s + (nrows -i);
-            k_j_start = s - j;
-            k_j_end = kernel_size;
+            int k_i_start = 0;
+            int k_i_end = s + (nrows -i);
+            int k_j_start = s - j;
+            int k_j_end = kernel_size;
             float tmp = 0.;
             //single element
             for (int k_i = 0; k_i < kernel_size; k_i ++ ){
@@ -384,13 +384,13 @@ void convolve_1B(unsigned char * source,int nrows,int ncols,float * kernel, int 
     #pragma omp for schedule(dynamic,ns) nowait
     for(int i = nrows - s; i < nrows; i++){
         for(int j = ncols - s; j < ncols; j++){
-            res_index = i*ncols + j;
+            int res_index = i*ncols + j;
             result[res_index] = 0;
             //single element
-            k_i_start = 0;
-            k_i_end = s + (nrows -i);
-            k_j_start = 0;
-            k_j_end = s + (ncols - j);
+            int k_i_start = 0;
+            int k_i_end = s + (nrows - i);
+            int k_j_start = 0;
+            int k_j_end = s + (ncols - j);
             float tmp = 0.;
             //single element
             for (int k_i = 0; k_i < kernel_size; k_i ++ ){
