@@ -148,7 +148,7 @@ void convolve_1B(unsigned char * source,int nrows,int ncols,float * kernel, int 
         for (int k_j = 0; k_j < kernel_size; k_j ++ ){  
             int k_index = k_i * kernel_size + k_j;
             int img_index = (i + (k_i - s))*ncols + (j + (k_j - s));
-            tmp+= kernel[k_index]*source[img_index];
+            tmp += kernel[k_index]*source[img_index];
         }
         }
         result[res_index] = tmp;
@@ -199,8 +199,8 @@ void convolve_1B(unsigned char * source,int nrows,int ncols,float * kernel, int 
             int k_j_end = kernel_size;
             float tmp = 0.;
             //single element
-            for (int k_i = 0; k_i < kernel_size; k_i ++ ){
-            for (int k_j = 0; k_j < kernel_size; k_j ++ ){  
+            for (int k_i = k_i_start; k_i < k_i_end; k_i ++ ){
+            for (int k_j = k_j_start; k_j < k_j_end; k_j ++ ){ 
                 int k_index = k_i * kernel_size + k_j;
                 int img_index = (i + (k_i - s))*ncols + (j + (k_j - s));
                 tmp+= kernel[k_index]*source[img_index];
@@ -227,8 +227,8 @@ void convolve_1B(unsigned char * source,int nrows,int ncols,float * kernel, int 
             int k_j_end = kernel_size;
             float tmp = 0.;
             //single element
-            for (int k_i = 0; k_i < kernel_size; k_i ++ ){
-            for (int k_j = 0; k_j < kernel_size; k_j ++ ){  
+            for (int k_i = k_i_start; k_i < k_i_end; k_i ++ ){
+            for (int k_j = k_j_start; k_j < k_j_end; k_j ++ ){  
                 int k_index = k_i * kernel_size + k_j;
                 int img_index = (i + (k_i - s))*ncols + (j + (k_j - s));
                 float c1 = kernel[k_index];
@@ -257,8 +257,8 @@ void convolve_1B(unsigned char * source,int nrows,int ncols,float * kernel, int 
             int k_j_end = kernel_size;
             float tmp = 0.;
             //single element
-            for (int k_i = 0; k_i < kernel_size; k_i ++ ){
-            for (int k_j = 0; k_j < kernel_size; k_j ++ ){  
+            for (int k_i = k_i_start; k_i < k_i_end; k_i ++ ){
+            for (int k_j = k_j_start; k_j < k_j_end; k_j ++ ){  
                 int k_index = k_i * kernel_size + k_j;
                 int img_index = (i + (k_i - s))*ncols + (j + (k_j - s));
                 tmp+= kernel[k_index]*source[img_index];
@@ -285,8 +285,8 @@ void convolve_1B(unsigned char * source,int nrows,int ncols,float * kernel, int 
             int k_j_end = s + nrows - j;
             float tmp = 0.;
             //single element
-            for (int k_i = 0; k_i < kernel_size; k_i ++ ){
-            for (int k_j = 0; k_j < kernel_size; k_j ++ ){  
+            for (int k_i = k_i_start; k_i < k_i_end; k_i ++ ){
+            for (int k_j = k_j_start; k_j < k_j_end; k_j ++ ){   
                 int k_index = k_i * kernel_size + k_j;
                 int img_index = (i + (k_i - s))*ncols + (j + (k_j - s));
                 tmp+= kernel[k_index]*source[img_index];
@@ -313,8 +313,8 @@ void convolve_1B(unsigned char * source,int nrows,int ncols,float * kernel, int 
             int k_j_end = kernel_size;
             float tmp = 0.;
             //single element
-            for (int k_i = 0; k_i < kernel_size; k_i ++ ){
-            for (int k_j = 0; k_j < kernel_size; k_j ++ ){  
+            for (int k_i = k_i_start; k_i < k_i_end; k_i ++ ){
+            for (int k_j = k_j_start; k_j < k_j_end; k_j ++ ){ 
                 int k_index = k_i * kernel_size + k_j;
                 int img_index = (i + (k_i - s))*ncols + (j + (k_j - s));
                 tmp+= kernel[k_index]*source[img_index];
@@ -340,8 +340,8 @@ void convolve_1B(unsigned char * source,int nrows,int ncols,float * kernel, int 
             int k_j_end = s + (ncols - j);
             float tmp = 0.;
             //single element
-            for (int k_i = 0; k_i < kernel_size; k_i ++ ){
-            for (int k_j = 0; k_j < kernel_size; k_j ++ ){  
+            for (int k_i = k_i_start; k_i < k_i_end; k_i ++ ){
+            for (int k_j = k_j_start; k_j < k_j_end; k_j ++ ){  
                 int k_index = k_i * kernel_size + k_j;
                 int img_index = (i + (k_i - s))*ncols + (j + (k_j - s));
                 tmp+= kernel[k_index]*source[img_index];
@@ -367,8 +367,8 @@ void convolve_1B(unsigned char * source,int nrows,int ncols,float * kernel, int 
             int k_j_end = kernel_size;
             float tmp = 0.;
             //single element
-            for (int k_i = 0; k_i < kernel_size; k_i ++ ){
-            for (int k_j = 0; k_j < kernel_size; k_j ++ ){  
+            for (int k_i = k_i_start; k_i < k_i_end; k_i ++ ){
+            for (int k_j = k_j_start; k_j < k_j_end; k_j ++ ){ 
                 int k_index = k_i * kernel_size + k_j;
                 int img_index = (i + (k_i - s))*ncols + (j + (k_j - s));
                 float c1 = kernel[k_index];
@@ -397,8 +397,8 @@ void convolve_1B(unsigned char * source,int nrows,int ncols,float * kernel, int 
             int k_j_end = s + (ncols - j);
             float tmp = 0.;
             //single element
-            for (int k_i = 0; k_i < kernel_size; k_i ++ ){
-            for (int k_j = 0; k_j < kernel_size; k_j ++ ){  
+            for (int k_i = k_i_start; k_i < k_i_end; k_i ++ ){
+            for (int k_j = k_j_start; k_j < k_j_end; k_j ++ ){  
                 int k_index = k_i * kernel_size + k_j;
                 int img_index = (i + (k_i - s))*ncols + (j + (k_j - s));
                 float c1 = kernel[k_index];
