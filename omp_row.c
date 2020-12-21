@@ -13,12 +13,13 @@
 
 #if ((0x100 & 0xf) == 0x0)
 #define I_M_LITTLE_ENDIAN 1
-#define swap(mem) (( (mem) & (short int)0xff00) >> 8) +	\
-  ( ((mem) & (short int)0x00ff) << 8)
+#define swap(mem) (( (mem) & (short int)0xff00) >> 8) + ( ((mem) & (short int)0x00ff) << 8)
 #else
 #define I_M_LITTLE_ENDIAN 0
 #define swap(mem) (mem)
 #endif
+
+
 
 void write_pgm_image( void *image, int maxval, int xsize, int ysize, const char *image_name)
 /*
@@ -199,75 +200,6 @@ void write_to_pgm_2B_ASCII(unsigned short int*mat,int nrows,int ncols, int max){
 
 }
 
-unsigned char* read_pgm_1B(int* nr, int* nc, int* m,const char* filename){
-    FILE* pgm_file;
-    pgm_file = fopen(filename,"rb");
-    int nrows,ncols,max;
-    char MAGIC[2];
-    size_t  k, n = 0;
-    char * line = NULL;
-    // get the Magic Number
-    k = fscanf(pgm_file, "%2s%*c", MAGIC);
-
-    // skip all the comments
-    k = getline( &line, &n, pgm_file);
-    while ( (k > 0) && (line[0]=='#') )
-        k = getline( &line, &n, pgm_file);
-
-    if (k > 0)
-        {
-        k = sscanf(line, "%d %d\n%d", &ncols, &nrows, &max);
-        if ( k < 3 )
-        fscanf(pgm_file, "%d%*c", &max);
-        }
-
-    unsigned char* image = (unsigned char*)malloc(nrows*ncols*sizeof(unsigned char));
-    printf("file opened %s\n%d %d\n%d \n", MAGIC, nrows, ncols, max);
-    fread(image, sizeof(unsigned char), nrows*ncols, pgm_file);
-    *nr = nrows;
-    *nc=ncols;
-    *m = max;
-    //write_to_pgm3(image, ncols, nrows, max);
-    fclose(pgm_file);
-    return image;
-}
-void* read_pgm_2B(int* nr, int* nc, int* m,const char* filename){
-    FILE* pgm_file;
-    pgm_file = fopen(filename,"rb");
-    int nrows,ncols,max;
-    char MAGIC[2];
-    size_t  k, n = 0;
-    char * line = NULL;
-    // get the Magic Number
-    k = fscanf(pgm_file, "%2s%*c", MAGIC);
-
-    // skip all the comments
-    k = getline( &line, &n, pgm_file);
-    while ( (k > 0) && (line[0]=='#') ){
-        k = getline( &line, &n, pgm_file);
-        }
-
-    if (k > 0)
-        {
-        k = sscanf(line, "%d %d", &ncols, &nrows);
-        }
-    fscanf(pgm_file, "%d", &max);
-
-    
-    printf("file opened %s\n%d %d\n%d \n", MAGIC, nrows, ncols, max);
-    void* image = (char*)malloc(nrows*ncols*2);
-    printf("Allocated\n");
-    size_t size = fread(image, 1, nrows*ncols*2, pgm_file);
-    fclose(pgm_file);
-    *nr = nrows;
-    *nc=ncols;
-    *m = max;
-    //write_to_pgm3(image, ncols, nrows, max);
-    
-    if(size != nrows*ncols*2){ printf("Error--- %ld %ld\n", nrows*ncols*sizeof(unsigned short int), size);}
-    return image;
-}
-
 void print_matrix(unsigned short int *matrix, unsigned int nrows, unsigned int ncols){
     for (unsigned int i = 0; i < nrows; i++){
         for (unsigned int j = 0; j < ncols; j++){
@@ -335,10 +267,6 @@ void get_SHARPEN_kernel(float* kernel, unsigned int kernel_size){
     
 }
 
-
-
-
-
 void convolve_1B(unsigned char * source,int nrows,int ncols,float * kernel, int kernel_size, unsigned char *result){
     
     //printf("S %d \n", s);
@@ -357,7 +285,7 @@ void convolve_1B(unsigned char * source,int nrows,int ncols,float * kernel, int 
 
     //printf("Processing Interior\n");
     #pragma omp for nowait
-    for(int cc = s; cc < nrows - ns; cc+=ns){    
+    for(int cc = s; cc < nrows - ns - s; cc+=ns){    
         for(int i = cc; i < cc+ns; i++){
             for(int j = s; j < ncols - s; j++){
             res_index = i*ncols + j;
@@ -1249,7 +1177,7 @@ void prc_1B(char* filename, char* out_file, float *kernel, unsigned int kernel_s
     convolve_1B((unsigned char* )image,nrows,ncols,kernel,kernel_size,convolved_image);
 
     if ( I_M_LITTLE_ENDIAN ) swap_image( convolved_image, ncols, nrows, max); 
-    write_pgm_image(convolved_image, max, ncols, nrows, "out.PGM");
+    write_pgm_image(convolved_image, max, ncols, nrows, out_file);
     free(image);
     free(convolved_image);
 }
@@ -1261,21 +1189,31 @@ void prc_2B(char* filename, char* out_file, float *kernel, unsigned int kernel_s
     
     read_pgm_image( &ptr, &maxval, &ncols, &nrows, filename);
     printf("The imaget has been read\n");
-    printf("%d %d\n", ncols,nrows);
+    
+    printf("%d %d\n", ncols, nrows);
     
     if ( I_M_LITTLE_ENDIAN ) swap_image( ptr, ncols, nrows, maxval);
 
     unsigned short* res = (unsigned short*)malloc(nrows*ncols*sizeof(unsigned short));
+    /*
     convolve_2B((unsigned short*)ptr, nrows,ncols,kernel, kernel_size, res);
+    */
+    unsigned char* rr = (unsigned char*)malloc(nrows*ncols*sizeof(unsigned char));
+    unsigned short* pp = (unsigned short*)ptr;
+    for(int i = 0; i < ncols*nrows; i++){
+        float vv = pp[i]/255.;
+        //if(vv ) printf("ccccc\n");
+        rr[i] = vv;
+        res[i] = vv;
+        //if((int)(vv*256) - pp[i] != 0) printf("ccccc\n");
+        
+    }
     
-    if ( I_M_LITTLE_ENDIAN ) swap_image( res, ncols, nrows, maxval);  
+    //if ( I_M_LITTLE_ENDIAN ) swap_image( res, ncols, nrows, maxval);   
     write_pgm_image(res, maxval, ncols, nrows, out_file);
+    write_pgm_image(rr, 255, ncols, nrows, "t.pgm");
 
 }
-
-
-
-
 
 int main(int argc, char**argv){
     unsigned short int kernel_type;
