@@ -575,7 +575,7 @@ void convolve_2B(unsigned short int* source,int nrows,int ncols,float * kernel, 
     #pragma omp parallel 
     {
     int k_i_start, k_i_end, k_j_start, k_j_end, img_index, res_index, k_index;
-    //float tmp;
+    float tmp;
     int s = kernel_size/2;
     
     //printf("Processing Interior\n");
@@ -595,7 +595,10 @@ void convolve_2B(unsigned short int* source,int nrows,int ncols,float * kernel, 
         for (int k_j = 0; k_j < kernel_size; k_j ++ ){  
             k_index = k_i * kernel_size + k_j;
             size_t img_index = (i + (k_i - s))*ncols + (j + (k_j - s));
-            tmp += kernel[k_index]*(float)source[img_index];
+            float c1 = kernel[k_index];
+            float c2 = (float)source[img_index];
+            //tmp += kernel[k_index]*(float)source[img_index];
+            tmp += c1*c2;
             
         }
         }
@@ -607,6 +610,7 @@ void convolve_2B(unsigned short int* source,int nrows,int ncols,float * kernel, 
     }
     }
     
+    /*
     float tmp = 0.;
     
     //remainder
@@ -846,7 +850,7 @@ void convolve_2B(unsigned short int* source,int nrows,int ncols,float * kernel, 
             result[res_index] = tmp;
         }
     }  
-    
+    */
     
     }
     printf("Processing finished successfully!\n");
