@@ -1195,16 +1195,16 @@ void prc_2B(char* filename, char* out_file, float *kernel, unsigned int kernel_s
     if ( I_M_LITTLE_ENDIAN ) swap_image( ptr, ncols, nrows, maxval);
 
     unsigned short* res = (unsigned short*)malloc(nrows*ncols*sizeof(unsigned short));
-    /*
+    
     convolve_2B((unsigned short*)ptr, nrows,ncols,kernel, kernel_size, res);
-    */
+    
     unsigned char* rr = (unsigned char*)malloc(nrows*ncols*sizeof(unsigned char));
     unsigned short* pp = (unsigned short*)ptr;
     for(int i = 0; i < ncols*nrows; i++){
         float vv = pp[i]/255.;
         //if(vv ) printf("ccccc\n");
         rr[i] = vv;
-        res[i] = vv;
+        //res[i] = vv;
         //if((int)(vv*256) - pp[i] != 0) printf("ccccc\n");
         
     }
