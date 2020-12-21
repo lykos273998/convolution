@@ -609,7 +609,7 @@ void convolve_2B(unsigned short int* source,int nrows,int ncols,float * kernel, 
     }
     
     
-    float tmp = 0.;
+    //float tmp = 0.;
     
     //remainder
     #pragma omp for schedule(dynamic,ns) nowait
