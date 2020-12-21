@@ -20,7 +20,6 @@
 #define swap(mem) (mem)
 #endif
 
-
 void write_pgm_image( void *image, int maxval, int xsize, int ysize, const char *image_name)
 /*
  * image        : a pointer to the memory region that contains the image
@@ -163,7 +162,7 @@ void swap_image( void *image, int xsize, int ysize, int maxval )
 
 void write_to_pgm_1B(unsigned char *mat,int nrows,int ncols, int max){
     FILE* pgmimg;
-    pgmimg = fopen("out.PGM", "wb"); //write the file in binary mode
+    pgmimg = fopen("out.PGM", "w"); //write the file in binary mode
     fprintf(pgmimg, "P5\n"); // Writing Magic Number to the File
     fprintf(pgmimg, "%d %d\n", ncols, nrows); // Writing Width and Height into the file
     fprintf(pgmimg, "255\n"); // Writing the maximum gray value
@@ -172,34 +171,33 @@ void write_to_pgm_1B(unsigned char *mat,int nrows,int ncols, int max){
 
 }
 
-void write_to_pgm_2B(unsigned short int *mat,int nrows,int ncols, int max){
+void write_to_pgm_2B(void *mat,int nrows,int ncols, int max){
     FILE* pgmimg;
-    pgmimg = fopen("out.PGM", "wb"); //write the file in binary mode
+    pgmimg = fopen("out.PGM", "w"); //write the file in binary mode
     fprintf(pgmimg, "P5\n"); // Writing Magic Number to the File
     fprintf(pgmimg, "%d %d\n", ncols, nrows); // Writing Width and Height into the file
     fprintf(pgmimg, "65535\n"); // Writing the maximum gray value
-    fwrite(mat,2, nrows*ncols,pgmimg);
+    fwrite(mat,1, nrows*ncols*2,pgmimg);
     fclose(pgmimg);
 
 }
 
-void write_to_pgm_2B_2(int *mat,int nrows,int ncols, int max){
+void write_to_pgm_2B_ASCII(unsigned short int*mat,int nrows,int ncols, int max){
     FILE* pgmimg;
-    pgmimg = fopen("out.PGM", "wb"); //write the file in binary mode
+    pgmimg = fopen("out.PGM", "w"); //write the file in binary mode
     fprintf(pgmimg, "P2\n"); // Writing Magic Number to the File
     fprintf(pgmimg, "%d %d\n", ncols, nrows); // Writing Width and Height into the file
     fprintf(pgmimg, "65535\n"); // Writing the maximum gray value
-    for(int i = 0; i<nrows; i++){
-        for(int j = 0; j<ncols;j++ ){
-            fprintf(pgmimg,"%c ", mat[i*nrows + j]);
+    for(int i = 0; i< nrows; i++){
+        for(int j = 0; j<ncols; j++){
+            //printf("%d ", mat[i*ncols+j]);
+            fprintf(pgmimg, "%d ", (int)mat[i*ncols+j]);
         }
         fprintf(pgmimg, "\n");
-
     }
     fclose(pgmimg);
 
 }
-
 
 unsigned char* read_pgm_1B(int* nr, int* nc, int* m,const char* filename){
     FILE* pgm_file;
@@ -233,7 +231,7 @@ unsigned char* read_pgm_1B(int* nr, int* nc, int* m,const char* filename){
     fclose(pgm_file);
     return image;
 }
-char* read_pgm_2B(int* nr, int* nc, int* m,const char* filename){
+void* read_pgm_2B(int* nr, int* nc, int* m,const char* filename){
     FILE* pgm_file;
     pgm_file = fopen(filename,"rb");
     int nrows,ncols,max;
@@ -255,14 +253,17 @@ char* read_pgm_2B(int* nr, int* nc, int* m,const char* filename){
         }
     fscanf(pgm_file, "%d", &max);
 
-    char* image = (char*)malloc(nrows*ncols*sizeof(char));
+    
     printf("file opened %s\n%d %d\n%d \n", MAGIC, nrows, ncols, max);
-    size_t size = fread(image, 2, nrows*ncols, pgm_file);
+    void* image = (char*)malloc(nrows*ncols*2);
+    printf("Allocated\n");
+    size_t size = fread(image, 1, nrows*ncols*2, pgm_file);
+    fclose(pgm_file);
     *nr = nrows;
     *nc=ncols;
     *m = max;
     //write_to_pgm3(image, ncols, nrows, max);
-    fclose(pgm_file);
+    
     if(size != nrows*ncols*2){ printf("Error--- %ld %ld\n", nrows*ncols*sizeof(unsigned short int), size);}
     return image;
 }
@@ -646,7 +647,7 @@ void convolve_2B(unsigned short int* source,int nrows,int ncols,float * kernel, 
     #pragma omp parallel 
     {
     int k_i_start, k_i_end, k_j_start, k_j_end, img_index, res_index, k_index;
-    float tmp;
+    //float tmp;
     int s = kernel_size/2;
     
     //printf("Processing Interior\n");
@@ -660,23 +661,25 @@ void convolve_2B(unsigned short int* source,int nrows,int ncols,float * kernel, 
             for(int j = s; j < ncols - s; j++){
             res_index = i*ncols + j;
             result[res_index] = 0;
-            tmp = 0.;
+            float tmp = 0.;
         //single element
         for (int k_i = 0; k_i < kernel_size; k_i ++ ){
         for (int k_j = 0; k_j < kernel_size; k_j ++ ){  
             k_index = k_i * kernel_size + k_j;
-            img_index = (i + (k_i - s))*ncols + (j + (k_j - s));
-            tmp += kernel[k_index]*source[img_index];
+            size_t img_index = (i + (k_i - s))*ncols + (j + (k_j - s));
+            tmp += kernel[k_index]*(float)source[img_index];
+            
         }
         }
-        result[res_index] = tmp;
+            result[res_index] = tmp;
+           // printf("%f ", tmp);
 
 
     }  
     }
     }
     
-    
+    /*
     
     //remainder
     #pragma omp for schedule(dynamic,ns) nowait
@@ -930,9 +933,310 @@ void convolve_2B(unsigned short int* source,int nrows,int ncols,float * kernel, 
     }  
     
 
-    
+    */
     
     }
+    printf("Processing finished successfully!\n");
+}
+
+void convolve_2B_float(float* source,int nrows,int ncols,float * kernel, int kernel_size, float* result){
+    
+    //printf("S %d \n", s);
+    
+    //interior convolution
+
+    
+    int k_i_start, k_i_end, k_j_start, k_j_end, img_index, res_index, k_index;
+    //float tmp;
+    int s = kernel_size/2;
+    
+    //printf("Processing Interior\n");
+    //int ns = nrows/omp_get_num_threads();
+    int ns = s + 1;
+
+    //printf("Processing Interior\n");
+     
+        for(int i = s; i < nrows - s; i++){
+            for(int j = s; j < ncols - s; j++){
+            res_index = i*ncols + j;
+            result[res_index] = 0;
+            float tmp = 0.;
+           // if(abs(source[res_index] - 17.) < 0.0001 ) printf("Hi I am the hjhkjh %f %d\n", source[res_index], res_index);
+        //single element
+            for (int k_i = 0; k_i < kernel_size; k_i ++ ){
+            for (int k_j = 0; k_j < kernel_size; k_j ++ ){  
+                k_index = k_i * kernel_size + k_j;
+                img_index = (i + (k_i - s))*ncols + (j + (k_j - s));
+                tmp += kernel[k_index] * source[img_index];
+                
+                
+            }
+            }
+            //printf("%f %d %d %f %f\n", tmp ,i ,j, source[res_index]*kernel[s*kernel_size + s], source[res_index]);
+            result[res_index] = tmp;
+            
+
+
+    }  
+    }
+    
+    /*
+    
+    //remainder
+    #pragma omp for schedule(dynamic,ns) nowait
+        for(int i = ((nrows - s)/ns)*ns; i < nrows - s; i++){
+                for(int j = s; j < ncols - s; j++){
+                    res_index = i*ncols + j;
+                    result[res_index] = 0;
+                    tmp = 0.;
+                    //single element
+                    for (int k_i = 0; k_i < kernel_size; k_i ++ ){
+                    for (int k_j = 0; k_j < kernel_size; k_j ++ ){  
+                        k_index = k_i * kernel_size + k_j;
+                        img_index = (i + (k_i - s))*ncols + (j + (k_j - s));
+                        tmp+= kernel[k_index]*source[img_index];
+                    }
+                    }
+                    result[res_index] = tmp;
+    }
+    }
+    
+    
+    //img_index, k_index, res_index;
+    //halo up
+    //printf("Processing HALO UP\n");
+    
+    
+    
+    //printf("Processing HALO UP\n");
+    #pragma omp for schedule(dynamic,ns) nowait
+    for(int i = 0; i <s; i++){
+        for(int j = s; j < ncols - s; j++){
+            res_index = i*ncols + j;
+            result[res_index] = 0;
+            //single element
+            k_i_start = s - i;
+            k_i_end = kernel_size;
+            k_j_start = 0;
+            k_j_end = kernel_size;
+            tmp = 0.;
+            //single element
+            for (int k_i = k_i_start; k_i < k_i_end; k_i ++ ){
+            for (int k_j = k_j_start; k_j < k_j_end; k_j ++ ){ 
+                k_index = k_i * kernel_size + k_j;
+                img_index = (i + (k_i - s))*ncols + (j + (k_j - s));
+                tmp += kernel[k_index]*source[img_index];
+            }
+            }
+            result[res_index] = tmp;
+
+        }
+    }
+    //halo down
+    
+    
+    
+    //printf("Processing HALO DOWN\n");
+    #pragma omp for schedule(dynamic,ns) nowait
+    for(int i = nrows - s; i < nrows; i++){
+        for(int j = s; j < ncols - s; j++){
+            res_index = i*ncols + j;
+            result[res_index] = 0;
+            //single element
+            k_i_start = 0;
+            k_i_end = s + (nrows - i);
+            k_j_start = 0;
+            k_j_end = kernel_size;
+            tmp = 0.;
+            //single element
+            for (int k_i = k_i_start; k_i < k_i_end; k_i ++ ){
+            for (int k_j = k_j_start; k_j < k_j_end; k_j ++ ){  
+                k_index = k_i * kernel_size + k_j;
+                img_index = (i + (k_i - s))*ncols + (j + (k_j - s));
+                float c1 = kernel[k_index];
+                float c2 = source[img_index];
+                tmp += c1*c2;
+            }
+            }
+            result[res_index] = tmp;
+
+        }
+    }  
+    
+
+    //halo left
+    
+    #pragma omp for schedule(dynamic,ns) nowait
+    //printf("Processing HALO LEFT\n");
+    for(int i = s; i < nrows - s; i++){
+        for(int j = 0; j < s; j++){
+            res_index = i*ncols + j;
+            result[res_index] = 0;
+            //single element
+            k_i_start = 0;
+            k_i_end = kernel_size;
+            k_j_start = s - j;
+            k_j_end = kernel_size;
+            tmp = 0.;
+            //single element
+            for (int k_i = k_i_start; k_i < k_i_end; k_i ++ ){
+            for (int k_j = k_j_start; k_j < k_j_end; k_j ++ ){  
+                k_index = k_i * kernel_size + k_j;
+                img_index = (i + (k_i - s))*ncols + (j + (k_j - s));
+                tmp+= kernel[k_index]*source[img_index];
+            }
+            }
+            result[res_index] = tmp;
+
+        }
+    }  
+    
+    //halo right
+    
+    
+    //printf("Processing HALO RIGHT\n");
+    #pragma omp for schedule(dynamic,ns) nowait
+    for(int i = s; i < nrows - s; i++){
+        for(int j = ncols - s; j < ncols; j++){
+            res_index = i*ncols + j;
+            result[res_index] = 0;
+            //single element
+            k_i_start = 0;
+            k_i_end = kernel_size;
+            k_j_start = 0;
+            k_j_end = s + nrows - j;
+            tmp = 0.;
+            //single element
+            for (int k_i = k_i_start; k_i < k_i_end; k_i ++ ){
+            for (int k_j = k_j_start; k_j < k_j_end; k_j ++ ){   
+                k_index = k_i * kernel_size + k_j;
+                img_index = (i + (k_i - s))*ncols + (j + (k_j - s));
+                tmp+= kernel[k_index]*source[img_index];
+            }
+            }
+            result[res_index] = tmp;
+
+        }
+    }  
+    
+    
+    
+    
+    //printf("Processing Q UP LEFT\n");
+    #pragma omp for schedule(dynamic,ns) nowait
+    for(int i = 0; i < s; i++){
+        for(int j = 0; j < s; j++){
+            res_index = i*ncols + j;
+            result[res_index] = 0;
+            //single element
+            k_i_start = s - i;
+            k_i_end = kernel_size;
+            k_j_start = s - j;
+            k_j_end = kernel_size;
+            tmp = 0.;
+            //single element
+            for (int k_i = k_i_start; k_i < k_i_end; k_i ++ ){
+            for (int k_j = k_j_start; k_j < k_j_end; k_j ++ ){ 
+                k_index = k_i * kernel_size + k_j;
+                img_index = (i + (k_i - s))*ncols + (j + (k_j - s));
+                tmp+= kernel[k_index]*source[img_index];
+            }
+            }
+            result[res_index] = tmp;
+
+        }
+    }  
+    
+
+   
+    //printf("Processing Q UP RIGHT\n");
+    #pragma omp for schedule(dynamic,ns) nowait
+    for(int i = 0; i < s; i++){
+        for(int j = ncols - s; j < ncols; j++){
+            res_index = i*ncols + j;
+            result[res_index] = 0;
+            //single element
+            k_i_start = s - i;
+            k_i_end = kernel_size;
+            k_j_start = 0;
+            k_j_end = s + (ncols - j);
+            tmp = 0.;
+            //single element
+            for (int k_i = k_i_start; k_i < k_i_end; k_i ++ ){
+            for (int k_j = k_j_start; k_j < k_j_end; k_j ++ ){  
+                k_index = k_i * kernel_size + k_j;
+                img_index = (i + (k_i - s))*ncols + (j + (k_j - s));
+                tmp+= kernel[k_index]*source[img_index];
+            }
+            }
+            result[res_index] = tmp;
+
+        }
+    }  
+    
+
+    
+    //printf("Processing Q DOWN LEFT\n");
+    #pragma omp for schedule(dynamic,ns) nowait
+    for(int i = nrows - s; i < nrows; i++){
+        for(int j = 0; j < s; j++){
+            res_index = i*ncols + j;
+            result[res_index] = 0;
+            //single element
+            k_i_start = 0;
+            k_i_end = s + (nrows -i);
+            k_j_start = s - j;
+            k_j_end = kernel_size;
+            tmp = 0.;
+            //single element
+            for (int k_i = k_i_start; k_i < k_i_end; k_i ++ ){
+            for (int k_j = k_j_start; k_j < k_j_end; k_j ++ ){ 
+                k_index = k_i * kernel_size + k_j;
+                img_index = (i + (k_i - s))*ncols + (j + (k_j - s));
+                float c1 = kernel[k_index];
+                float c2 = source[img_index];
+                tmp += c1*c2;
+            }
+            }
+            result[res_index] = tmp;
+
+        }
+    }  
+    
+
+    
+
+    //printf("Processing Q DOWN RIGHT\n");
+    #pragma omp for schedule(dynamic,ns) nowait
+    for(int i = nrows - s; i < nrows; i++){
+        for(int j = ncols - s; j < ncols; j++){
+            res_index = i*ncols + j;
+            result[res_index] = 0;
+            //single element
+            k_i_start = 0;
+            k_i_end = s + (nrows - i);
+            k_j_start = 0;
+            k_j_end = s + (ncols - j);
+            tmp = 0.;
+            //single element
+            for (int k_i = k_i_start; k_i < k_i_end; k_i ++ ){
+            for (int k_j = k_j_start; k_j < k_j_end; k_j ++ ){  
+                k_index = k_i * kernel_size + k_j;
+                img_index = (i + (k_i - s))*ncols + (j + (k_j - s));
+                float c1 = kernel[k_index];
+                float c2 = source[img_index];
+                tmp += c1*c2;
+            }
+            }
+            result[res_index] = tmp;
+
+        }
+    }  
+    
+
+    */
+    
+    
     printf("Processing finished successfully!\n");
 }
 
@@ -964,26 +1268,51 @@ int spy(char* filename){
 }
 
 void prc_1B(char* filename, float *kernel, unsigned int kernel_size){
-    unsigned char* image;
+    printf("this machine is %s\n", (I_M_LITTLE_ENDIAN)?"little endian":"big endian");
+    void* image;
     int nrows, ncols, max;
-    image = read_pgm_1B(&nrows,&ncols,&max, filename);
+    read_pgm_image(&image, &max, &ncols, &nrows, filename);
+    if ( I_M_LITTLE_ENDIAN ) swap_image( image, ncols, nrows, max);
+
     unsigned char* convolved_image = (unsigned char*)malloc(nrows*ncols*sizeof(unsigned char));
-    convolve_1B(image,nrows,ncols,kernel,kernel_size,convolved_image);
-    write_to_pgm_1B(convolved_image,nrows,ncols,max);
-    //free(image);
+    convolve_1B((unsigned char* )image,nrows,ncols,kernel,kernel_size,convolved_image);
+
+    if ( I_M_LITTLE_ENDIAN ) swap_image( convolved_image, ncols, nrows, max); 
+    write_pgm_image(convolved_image, max, ncols, nrows, "out.PGM");
+    free(image);
     free(convolved_image);
 }
 
 void prc_2B(char* filename, float *kernel, unsigned int kernel_size){
-    void* img;
-    int nrows, ncols, max;
-    read_pgm_image(&img, &max, &ncols, &nrows, filename);
-    unsigned short int* image = (unsigned short int*)img;
-    unsigned short int* convolved_image = (unsigned short int*)malloc(nrows*ncols*sizeof(unsigned short int));
-    convolve_2B(image,nrows,ncols,kernel,kernel_size,convolved_image);
-    write_to_pgm_2B(convolved_image, nrows, ncols, max);
-    //free(image);
-    free(convolved_image);
+    printf("this machine is %s\n", (I_M_LITTLE_ENDIAN)?"little endian":"big endian");
+    int maxval, ncols, nrows;
+    void* ptr;
+    
+    read_pgm_image( &ptr, &maxval, &ncols, &nrows, filename);
+    printf("The imaget has been read\n");
+    printf("%d %d\n", ncols,nrows);
+    // swap the endianism
+    //
+    if ( I_M_LITTLE_ENDIAN ) swap_image( ptr, ncols, nrows, maxval);
+
+    unsigned short* res = (unsigned short*)malloc(nrows*ncols*sizeof(unsigned short));
+    convolve_2B((unsigned short*)ptr, nrows,ncols,kernel, kernel_size, res);
+    write_to_pgm_2B_ASCII(res, nrows,ncols,maxval);
+
+    //if ( I_M_LITTLE_ENDIAN ) swap_image( res, ncols, nrows, maxval);  
+
+
+
+    write_pgm_image(res, maxval, ncols, nrows, "oooooo.pgm");
+
+    void* ptr2;
+    read_pgm_image(&ptr2, &maxval, &ncols, &nrows, "oooooo.pgm");
+    unsigned short* res_i = (unsigned short *)ptr2;
+    for(int i = 0; i<ncols*nrows; i++){
+        if(res[i]!=res_i[i]) printf("error error eroorororor\n");
+    }
+
+
 }
 
 
@@ -1055,7 +1384,7 @@ int main(int argc, char**argv){
         break;
     }
 
-    //system("eog out.PGM") cc;
+    
     free(kernel);
 
     return 0;
