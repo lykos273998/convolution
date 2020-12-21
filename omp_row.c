@@ -679,7 +679,7 @@ void convolve_2B(unsigned short int* source,int nrows,int ncols,float * kernel, 
     }
     }
     
-    /*
+    float tmp = 0.;
     
     //remainder
     #pragma omp for schedule(dynamic,ns) nowait
@@ -728,7 +728,6 @@ void convolve_2B(unsigned short int* source,int nrows,int ncols,float * kernel, 
             }
             }
             result[res_index] = tmp;
-
         }
     }
     //halo down
@@ -758,11 +757,9 @@ void convolve_2B(unsigned short int* source,int nrows,int ncols,float * kernel, 
             }
             }
             result[res_index] = tmp;
-
         }
     }  
     
-
     //halo left
     
     #pragma omp for schedule(dynamic,ns) nowait
@@ -786,7 +783,6 @@ void convolve_2B(unsigned short int* source,int nrows,int ncols,float * kernel, 
             }
             }
             result[res_index] = tmp;
-
         }
     }  
     
@@ -814,7 +810,6 @@ void convolve_2B(unsigned short int* source,int nrows,int ncols,float * kernel, 
             }
             }
             result[res_index] = tmp;
-
         }
     }  
     
@@ -842,11 +837,9 @@ void convolve_2B(unsigned short int* source,int nrows,int ncols,float * kernel, 
             }
             }
             result[res_index] = tmp;
-
         }
     }  
     
-
    
     //printf("Processing Q UP RIGHT\n");
     #pragma omp for schedule(dynamic,ns) nowait
@@ -869,11 +862,9 @@ void convolve_2B(unsigned short int* source,int nrows,int ncols,float * kernel, 
             }
             }
             result[res_index] = tmp;
-
         }
     }  
     
-
     
     //printf("Processing Q DOWN LEFT\n");
     #pragma omp for schedule(dynamic,ns) nowait
@@ -898,13 +889,10 @@ void convolve_2B(unsigned short int* source,int nrows,int ncols,float * kernel, 
             }
             }
             result[res_index] = tmp;
-
         }
     }  
     
-
     
-
     //printf("Processing Q DOWN RIGHT\n");
     #pragma omp for schedule(dynamic,ns) nowait
     for(int i = nrows - s; i < nrows; i++){
@@ -928,12 +916,9 @@ void convolve_2B(unsigned short int* source,int nrows,int ncols,float * kernel, 
             }
             }
             result[res_index] = tmp;
-
         }
     }  
     
-
-    */
     
     }
     printf("Processing finished successfully!\n");
@@ -980,7 +965,7 @@ void convolve_2B_float(float* source,int nrows,int ncols,float * kernel, int ker
     }  
     }
     
-    /*
+    float tmp = 0.;
     
     //remainder
     #pragma omp for schedule(dynamic,ns) nowait
@@ -1029,7 +1014,6 @@ void convolve_2B_float(float* source,int nrows,int ncols,float * kernel, int ker
             }
             }
             result[res_index] = tmp;
-
         }
     }
     //halo down
@@ -1059,11 +1043,9 @@ void convolve_2B_float(float* source,int nrows,int ncols,float * kernel, int ker
             }
             }
             result[res_index] = tmp;
-
         }
     }  
     
-
     //halo left
     
     #pragma omp for schedule(dynamic,ns) nowait
@@ -1087,7 +1069,6 @@ void convolve_2B_float(float* source,int nrows,int ncols,float * kernel, int ker
             }
             }
             result[res_index] = tmp;
-
         }
     }  
     
@@ -1115,7 +1096,6 @@ void convolve_2B_float(float* source,int nrows,int ncols,float * kernel, int ker
             }
             }
             result[res_index] = tmp;
-
         }
     }  
     
@@ -1143,11 +1123,9 @@ void convolve_2B_float(float* source,int nrows,int ncols,float * kernel, int ker
             }
             }
             result[res_index] = tmp;
-
         }
     }  
     
-
    
     //printf("Processing Q UP RIGHT\n");
     #pragma omp for schedule(dynamic,ns) nowait
@@ -1170,11 +1148,9 @@ void convolve_2B_float(float* source,int nrows,int ncols,float * kernel, int ker
             }
             }
             result[res_index] = tmp;
-
         }
     }  
     
-
     
     //printf("Processing Q DOWN LEFT\n");
     #pragma omp for schedule(dynamic,ns) nowait
@@ -1199,13 +1175,10 @@ void convolve_2B_float(float* source,int nrows,int ncols,float * kernel, int ker
             }
             }
             result[res_index] = tmp;
-
         }
     }  
     
-
     
-
     //printf("Processing Q DOWN RIGHT\n");
     #pragma omp for schedule(dynamic,ns) nowait
     for(int i = nrows - s; i < nrows; i++){
@@ -1229,12 +1202,10 @@ void convolve_2B_float(float* source,int nrows,int ncols,float * kernel, int ker
             }
             }
             result[res_index] = tmp;
-
         }
     }  
     
-
-    */
+    
     
     
     printf("Processing finished successfully!\n");
@@ -1267,7 +1238,7 @@ int spy(char* filename){
     else {return 2;}
 }
 
-void prc_1B(char* filename, float *kernel, unsigned int kernel_size){
+void prc_1B(char* filename, char* out_file, float *kernel, unsigned int kernel_size){
     printf("this machine is %s\n", (I_M_LITTLE_ENDIAN)?"little endian":"big endian");
     void* image;
     int nrows, ncols, max;
@@ -1283,7 +1254,7 @@ void prc_1B(char* filename, float *kernel, unsigned int kernel_size){
     free(convolved_image);
 }
 
-void prc_2B(char* filename, float *kernel, unsigned int kernel_size){
+void prc_2B(char* filename, char* out_file, float *kernel, unsigned int kernel_size){
     printf("this machine is %s\n", (I_M_LITTLE_ENDIAN)?"little endian":"big endian");
     int maxval, ncols, nrows;
     void* ptr;
@@ -1291,27 +1262,14 @@ void prc_2B(char* filename, float *kernel, unsigned int kernel_size){
     read_pgm_image( &ptr, &maxval, &ncols, &nrows, filename);
     printf("The imaget has been read\n");
     printf("%d %d\n", ncols,nrows);
-    // swap the endianism
-    //
+    
     if ( I_M_LITTLE_ENDIAN ) swap_image( ptr, ncols, nrows, maxval);
 
     unsigned short* res = (unsigned short*)malloc(nrows*ncols*sizeof(unsigned short));
     convolve_2B((unsigned short*)ptr, nrows,ncols,kernel, kernel_size, res);
-    write_to_pgm_2B_ASCII(res, nrows,ncols,maxval);
-
-    //if ( I_M_LITTLE_ENDIAN ) swap_image( res, ncols, nrows, maxval);  
-
-
-
-    write_pgm_image(res, maxval, ncols, nrows, "oooooo.pgm");
-
-    void* ptr2;
-    read_pgm_image(&ptr2, &maxval, &ncols, &nrows, "oooooo.pgm");
-    unsigned short* res_i = (unsigned short *)ptr2;
-    for(int i = 0; i<ncols*nrows; i++){
-        if(res[i]!=res_i[i]) printf("error error eroorororor\n");
-    }
-
+    
+    if ( I_M_LITTLE_ENDIAN ) swap_image( res, ncols, nrows, maxval);  
+    write_pgm_image(res, maxval, ncols, nrows, out_file);
 
 }
 
@@ -1323,7 +1281,7 @@ int main(int argc, char**argv){
     unsigned short int kernel_type;
     unsigned int kernel_size;
     float* kernel;
-    char* input_file; 
+    char* input_file, *out_file; 
     if(argc < 3){
         printf("usage: \n ./executable KERNEL_TYPE<0,1,..> KERNEL_SIZE INPUT_FILE \n ---PGM FILES ALLOWED ONLY--- \n");
         return 0;
@@ -1335,6 +1293,8 @@ int main(int argc, char**argv){
         return 0;
     }
     input_file = argv[3];
+    out_file = "out.pgm";
+    if (argc > 4){out_file = argv[4];}
     kernel = (float*)malloc(kernel_size*kernel_size*sizeof(float));
     switch (kernel_type){
         case 0:
@@ -1374,10 +1334,10 @@ int main(int argc, char**argv){
     switch (N_BYTES)
     {
     case 1:
-        prc_1B(input_file, kernel, kernel_size);
+        prc_1B(input_file,out_file, kernel, kernel_size);
         break;
     case 2:
-        prc_2B(input_file, kernel, kernel_size);
+        prc_2B(input_file,out_file, kernel, kernel_size);
         break;
     default:
         return 0;
