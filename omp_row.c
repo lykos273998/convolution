@@ -584,7 +584,7 @@ void convolve_2B(unsigned short int* source,int nrows,int ncols,float * kernel, 
 
     //printf("Processing Interior\n");
     #pragma omp for nowait
-    for(int cc = s; cc < nrows - ns; cc+=ns){    
+    for(int cc = s; cc < nrows - ns - s; cc+=ns){    
         for(int i = cc; i < cc+ns; i++){
             for(int j = s; j < ncols - s; j++){
             res_index = i*ncols + j;
