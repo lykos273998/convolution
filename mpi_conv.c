@@ -232,14 +232,14 @@ void get_start_position(int nrows, int myid, int numprocs, int kernel_size, int*
       dim += 1;
     }
     else{
-      start_position += nrows % numprocs - 1;
+      start_position += nrows % numprocs;
     }
 
     if(myid == 0 || myid == numprocs - 1){
       dim += s;
     }
     else{
-      dim+=2*s;
+      dim += 2*s;
     }
     
     *start = start_position - s*(myid > 0);
@@ -293,7 +293,7 @@ void convolve_1B(unsigned char * source,int nrows,int ncols,float * kernel, int 
     //master things
     if(myid == 0){
       //halo up
-      printf("halo up\n");
+      //printf("halo up\n");
     for(int i = 0; i <s; i++){
         for(int j = s; j < ncols - s; j++){
             res_index = i*ncols + j;
@@ -373,7 +373,270 @@ void convolve_1B(unsigned char * source,int nrows,int ncols,float * kernel, int 
     //halo down
    
     if(myid == numprocs - 1){
-      //printf("Processing HALO DOWN\n");
+    //printf("Processing HALO DOWN %d\n", nrows);
+    for(int i = nrows - s; i < nrows; i++){
+        for(int j = s; j < ncols - s; j++){
+            res_index = i*ncols + j;
+            result[res_index] = 0;
+            //single element
+            k_i_start = 0;
+            k_i_end = s + (nrows - i);
+            k_j_start = 0;
+            k_j_end = kernel_size;
+            tmp = 0.;
+            //single element
+            for (int k_i = k_i_start; k_i < k_i_end; k_i ++ ){
+            for (int k_j = k_j_start; k_j < k_j_end; k_j ++ ){  
+                k_index = k_i * kernel_size + k_j;
+                img_index = (i + (k_i - s))*ncols + (j + (k_j - s));
+                float c1 = kernel[k_index];
+                float c2 = source[img_index];
+                tmp += c1*c2;
+            }
+            }
+            result[res_index] = tmp;
+
+        }
+    }  
+    
+
+    //printf("Processing Q DOWN LEFT\n");
+    for(int i = nrows - s; i < nrows; i++){
+        for(int j = 0; j < s; j++){
+            res_index = i*ncols + j;
+            result[res_index] = 0;
+            //single element
+            k_i_start = 0;
+            k_i_end = s + (nrows -i);
+            k_j_start = s - j;
+            k_j_end = kernel_size;
+            tmp = 0.;
+            //single element
+            for (int k_i = k_i_start; k_i < k_i_end; k_i ++ ){
+            for (int k_j = k_j_start; k_j < k_j_end; k_j ++ ){ 
+                k_index = k_i * kernel_size + k_j;
+                img_index = (i + (k_i - s))*ncols + (j + (k_j - s));
+                float c1 = kernel[k_index];
+                float c2 = source[img_index];
+                tmp += c1*c2;
+            }
+            }
+            result[res_index] = tmp;
+
+        }
+    }  
+    
+
+    
+
+    //printf("Processing Q DOWN RIGHT\n");
+    for(int i = nrows - s; i < nrows; i++){
+        for(int j = ncols - s; j < ncols; j++){
+            res_index = i*ncols + j;
+            result[res_index] = 0;
+            //single element
+            k_i_start = 0;
+            k_i_end = s + (nrows - i);
+            k_j_start = 0;
+            k_j_end = s + (ncols - j);
+            tmp = 0.;
+            //single element
+            for (int k_i = k_i_start; k_i < k_i_end; k_i ++ ){
+            for (int k_j = k_j_start; k_j < k_j_end; k_j ++ ){  
+                k_index = k_i * kernel_size + k_j;
+                img_index = (i + (k_i - s))*ncols + (j + (k_j - s));
+                float c1 = kernel[k_index];
+                float c2 = source[img_index];
+                tmp += c1*c2;
+            }
+            }
+            result[res_index] = tmp;
+
+        }
+    }
+    }
+   
+    //halo left
+    
+    //printf("Processing HALO LEFT\n");
+    for(int i = s; i < nrows - s; i++){
+        for(int j = 0; j < s; j++){
+            res_index = i*ncols + j;
+            result[res_index] = 0;
+            //single element
+            k_i_start = 0;
+            k_i_end = kernel_size;
+            k_j_start = s - j;
+            k_j_end = kernel_size;
+            tmp = 0.;
+            //single element
+            for (int k_i = k_i_start; k_i < k_i_end; k_i ++ ){
+            for (int k_j = k_j_start; k_j < k_j_end; k_j ++ ){  
+                k_index = k_i * kernel_size + k_j;
+                img_index = (i + (k_i - s))*ncols + (j + (k_j - s));
+                tmp+= kernel[k_index]*source[img_index];
+            }
+            }
+            result[res_index] = tmp;
+
+        }
+    }  
+    
+    //halo right
+    
+    
+    //printf("Processing HALO RIGHT\n");
+    for(int i = s; i < nrows - s; i++){
+        for(int j = ncols - s; j < ncols; j++){
+            res_index = i*ncols + j;
+            result[res_index] = 0;
+            //single element
+            k_i_start = 0;
+            k_i_end = kernel_size;
+            k_j_start = 0;
+            k_j_end = s + ncols - j;
+            tmp = 0.;
+            //single element
+            for (int k_i = k_i_start; k_i < k_i_end; k_i ++ ){
+            for (int k_j = k_j_start; k_j < k_j_end; k_j ++ ){   
+                k_index = k_i * kernel_size + k_j;
+                img_index = (i + (k_i - s))*ncols + (j + (k_j - s));
+                tmp+= kernel[k_index]*source[img_index];
+            }
+            }
+            result[res_index] = tmp;
+
+        }
+    }      
+    //printf("Processing finished successfully!\n");
+}
+
+
+void convolve_2B(unsigned short * source,int nrows,int ncols,float * kernel, int kernel_size, int myid, int numprocs, unsigned short *result){
+    
+    //every process has  an interior, HALO LEFT HALO RIGHT
+    //MASTER HAS QUL QUR HALO UP INTERIOR HALO LR
+    //LAST HAS QLL QLR HALO DOWN INTERIOR HALO LR
+
+    
+    //interior convolution
+
+    int k_i_start, k_i_end, k_j_start, k_j_end, img_index, res_index, k_index;
+    float tmp;
+    int s = kernel_size/2;
+    
+    
+    int ns = s + 1;
+    int remainder = nrows - s - ((nrows - 2*s) % ns);
+    
+
+        for(int i = s; i < nrows - s; i++){
+            for(int j = s; j < ncols - s; j++){
+            res_index = i*ncols + j;
+            result[res_index] = 0;
+            float tmp = 0.;
+        //single element
+        for (int k_i = 0; k_i < kernel_size; k_i ++ ){
+        for (int k_j = 0; k_j < kernel_size; k_j ++ ){  
+            k_index = k_i * kernel_size + k_j;
+            size_t img_index = (i + (k_i - s))*ncols + (j + (k_j - s));
+            tmp += kernel[k_index]*(float)source[img_index];
+            
+            
+        }
+        }
+            result[res_index] = tmp;
+           // printf("%f ", tmp);
+
+
+    }  
+    }
+  
+    //img_index, k_index, res_index;
+    //master things
+    if(myid == 0){
+      //halo up
+      //printf("halo up\n");
+    for(int i = 0; i <s; i++){
+        for(int j = s; j < ncols - s; j++){
+            res_index = i*ncols + j;
+            result[res_index] = 0;
+            //single element
+            k_i_start = s - i;
+            k_i_end = kernel_size;
+            k_j_start = 0;
+            k_j_end = kernel_size;
+            tmp = 0.;
+            //single element
+            for (int k_i = k_i_start; k_i < k_i_end; k_i ++ ){
+            for (int k_j = k_j_start; k_j < k_j_end; k_j ++ ){ 
+                k_index = k_i * kernel_size + k_j;
+                img_index = (i + (k_i - s))*ncols + (j + (k_j - s));
+                tmp += kernel[k_index]*source[img_index];
+            }
+            }
+            result[res_index] = tmp;
+
+        }
+    }
+
+
+    //printf("Processing Q UP LEFT\n");
+    for(int i = 0; i < s; i++){
+        for(int j = 0; j < s; j++){
+            res_index = i*ncols + j;
+            result[res_index] = 0;
+            //single element
+            k_i_start = s - i;
+            k_i_end = kernel_size;
+            k_j_start = s - j;
+            k_j_end = kernel_size;
+            tmp = 0.;
+            //single element
+            for (int k_i = k_i_start; k_i < k_i_end; k_i ++ ){
+            for (int k_j = k_j_start; k_j < k_j_end; k_j ++ ){ 
+                k_index = k_i * kernel_size + k_j;
+                img_index = (i + (k_i - s))*ncols + (j + (k_j - s));
+                tmp+= kernel[k_index]*source[img_index];
+            }
+            }
+            result[res_index] = tmp;
+
+        }
+    }  
+
+    //printf("Processing Q UP RIGHT\n");
+    for(int i = 0; i < s; i++){
+        for(int j = ncols - s; j < ncols; j++){
+            res_index = i*ncols + j;
+            result[res_index] = 0;
+            //single element
+            k_i_start = s - i;
+            k_i_end = kernel_size;
+            k_j_start = 0;
+            k_j_end = s + (ncols - j);
+            tmp = 0.;
+            //single element
+            for (int k_i = k_i_start; k_i < k_i_end; k_i ++ ){
+            for (int k_j = k_j_start; k_j < k_j_end; k_j ++ ){  
+                k_index = k_i * kernel_size + k_j;
+                img_index = (i + (k_i - s))*ncols + (j + (k_j - s));
+                tmp+= kernel[k_index]*source[img_index];
+            }
+            }
+            result[res_index] = tmp;
+
+        }
+    } 
+
+
+
+
+    }
+    //halo down
+   
+    if(myid == numprocs - 1){
+    //printf("Processing HALO DOWN %d\n", nrows);
     for(int i = nrows - s; i < nrows; i++){
         for(int j = s; j < ncols - s; j++){
             res_index = i*ncols + j;
@@ -598,6 +861,7 @@ int main(int argc, char**argv){
       metadata[0] = maxval;
       metadata[1] = ncols;
       metadata[2] = nrows;
+      printf("File opened, processing %d Bytes image\n", 1 + (maxval > 255) );
 
     }
 
@@ -627,95 +891,116 @@ int main(int argc, char**argv){
             int sp, nr;
             get_start_position(nrows, p, numprocs, kernel_size, &sp, &nr);
             unsigned char* bf_to_send = (unsigned char*)source + sp*ncols;
-            printf("%d %d %dend \n",sp,  sp + nr, nr);
+            
             MPI_Send(bf_to_send, nr*ncols, MPI_UNSIGNED_CHAR, p, tag, MPI_COMM_WORLD);
           }
           unsigned char * myimg = (unsigned char *)source;
           
           unsigned char * final_res = (unsigned char *)malloc(nrows*ncols*sizeof(unsigned char));
           convolve_1B(myimg, dim, ncols, kernel, kernel_size, myid, numprocs, final_res);
-          
+          final_res[nrows*ncols - 1] = 117;
           for(int p = 1; p < numprocs; p++){
             int sp, nr;
             
             get_start_position(nrows, p, numprocs, kernel_size, &sp, &nr);
             
             int recv_dim = nr - 2*s + s*(p==0 || p == numprocs - 1);
-            printf("%d %d %d %d\n", p, recv_dim, (sp+s), (sp+s)+recv_dim);
-            unsigned char* bf_to_rcv = (unsigned char*)final_res + (sp+s)*ncols;
+            
+            unsigned char* bf_to_rcv = final_res + (sp+s)*ncols;
             MPI_Recv(bf_to_rcv, recv_dim*ncols, MPI_UNSIGNED_CHAR, p, p, MPI_COMM_WORLD, &status);
+            
           }
           //free(final_res);
-          //free(myimg);
-          
+          free(myimg);
+         
           if ( I_M_LITTLE_ENDIAN ) swap_image( final_res, ncols, nrows, maxval);
           write_pgm_image(final_res, maxval,ncols,nrows, out_file);
-          
-          printf("%d\n", final_res[88]);
-          
-          
+          printf("Exported succesfully to %s\n", out_file);
+       
         }
         
 
         else{
           
           unsigned char * res = (unsigned char *)malloc(res_dim*ncols*sizeof(unsigned char));
-          printf("**** %d %d %d \n", myid, dim, res_dim);
+          
           unsigned char* myimg = (unsigned char*)malloc(dim*ncols*sizeof(unsigned char));
+          
           MPI_Recv(myimg, dim*ncols, MPI_UNSIGNED_CHAR, master, tag, MPI_COMM_WORLD, &status);
+        
           res = res - s*ncols;
           convolve_1B(myimg, dim, ncols, kernel, kernel_size, myid, numprocs, res);
           res = res + s*ncols;
           MPI_Send(res, (res_dim)*ncols, MPI_UNSIGNED_CHAR, master, myid, MPI_COMM_WORLD);
           char my_out[6];
           sprintf(my_out,"%d.pgm",myid);
-          if ( I_M_LITTLE_ENDIAN ) swap_image( myimg, ncols, dim, maxval);
-          write_pgm_image(res, maxval,ncols,res_dim, my_out);
-          //printf("%d\n", res[88]);
-          //free(myimg);
-          //free(res);
+          if ( I_M_LITTLE_ENDIAN ) swap_image( myimg, ncols, dim, maxval);          
+          free(myimg);
+          free(res);
         }
         
         break;
       }
+      
       case 2:
       {
+        
+        if(I_AM_MASTER){
+          for(int p = 1; p < numprocs; p++){
+            int sp, nr;
+            get_start_position(nrows, p, numprocs, kernel_size, &sp, &nr);
+            unsigned short int* bf_to_send = (unsigned short int*)source + sp*ncols;
+            
+            MPI_Send(bf_to_send, nr*ncols, MPI_UNSIGNED_SHORT, p, tag, MPI_COMM_WORLD);
+          }
+          unsigned short * myimg = (unsigned short *)source;
+          
+          unsigned short * final_res = (unsigned short *)malloc(nrows*ncols*sizeof(unsigned short));
+          convolve_2B(myimg, dim, ncols, kernel, kernel_size, myid, numprocs, final_res);
+          final_res[nrows*ncols - 1] = 117;
+          for(int p = 1; p < numprocs; p++){
+            int sp, nr;
+            
+            get_start_position(nrows, p, numprocs, kernel_size, &sp, &nr);
+            
+            int recv_dim = nr - 2*s + s*(p==0 || p == numprocs - 1);
+            
+            unsigned short* bf_to_rcv = final_res + (sp+s)*ncols;
+            MPI_Recv(bf_to_rcv, recv_dim*ncols, MPI_UNSIGNED_SHORT, p, p, MPI_COMM_WORLD, &status);
+            
+          }
+          //free(final_res);
+          free(myimg);
+         
+          if ( I_M_LITTLE_ENDIAN ) swap_image( final_res, ncols, nrows, maxval);
+          write_pgm_image(final_res, maxval,ncols,nrows, out_file);
+          printf("Exported succesfully to %s\n", out_file);
+       
+        }
+        
 
+        else{
+          
+          unsigned short * res = (unsigned short *)malloc(res_dim*ncols*sizeof(unsigned short));
+          
+          unsigned short* myimg = (unsigned short *)malloc(dim*ncols*sizeof(unsigned short));
+          
+          MPI_Recv(myimg, dim*ncols, MPI_UNSIGNED_SHORT, master, tag, MPI_COMM_WORLD, &status);
+        
+          res = res - s*ncols;
+          convolve_2B(myimg, dim, ncols, kernel, kernel_size, myid, numprocs, res);
+          res = res + s*ncols;
+          MPI_Send(res, (res_dim)*ncols, MPI_UNSIGNED_SHORT, master, myid, MPI_COMM_WORLD);
+          if ( I_M_LITTLE_ENDIAN ) swap_image( myimg, ncols, dim, maxval);          
+          free(myimg);
+          free(res);
+        }
+        
+        break;
       }
+      
     }
-  
-
-
-
-    /*
-    switch (1 + (maxval > 255))
-    {
-    case 1:
-        {
-        unsigned char* result = (unsigned char*)malloc(nrows*ncols*sizeof(unsigned char));
-        convolve_1B((unsigned char* )source,nrows,ncols,kernel,kernel_size,result);
-        if ( I_M_LITTLE_ENDIAN ) swap_image( result, ncols, nrows, maxval); 
-        write_pgm_image(result, maxval, ncols, nrows, out_file);
-        free(result);
-        break;
-        }
-
-    case 2:
-        {
-        unsigned short int* result = (unsigned short int*)malloc(nrows*ncols*sizeof(unsigned short int));
-        convolve_2B((unsigned short int* )source,nrows,ncols,kernel,kernel_size,result);
-        if ( I_M_LITTLE_ENDIAN ) swap_image( result, ncols, nrows, maxval); 
-        write_pgm_image(result, maxval, ncols, nrows, out_file);
-        free(result);
-        break;
-        }
-    default:
-        return 0;
-        printf("Something went wrong aborting\n");
-        break;
-    }
-    */
-    
+      
     free(kernel);
     //free(source);
     MPI_Finalize();
