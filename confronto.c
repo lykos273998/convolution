@@ -170,20 +170,28 @@ int main(int argc, char** argv){
     void* image2;
     read_pgm_image(&image2, &max, &ncols, &nrows, f2);
     if ( I_M_LITTLE_ENDIAN ) swap_image( image2, ncols, nrows, max);
-    printf("%d %d \n", nrows, ncols);
+    printf("%d %d %d\n", max, nrows, ncols);
+    FILE * out;
+    out = fopen("err.log","w");
+    int error = 0;
     if (max > 255){
     for(int i=0; i < ncols*nrows; i++){
-        if(((unsigned short*)image1)[i] != ((unsigned short*)image2)[i] ) {printf("error at %d aborting\n", i); break;}
+        if(((unsigned short*)image1)[i] != ((unsigned short*)image2)[i] ) {
+        fprintf(out, "error at %d %d diff %d %d %d \n", i/ncols, i%ncols, ((unsigned short*)image1)[i] -((unsigned short*)image2)[i], ((unsigned short*)image1)[i] , ((unsigned short*)image2)[i] ); 
+        error+=1; }
        // if(i % 1000 == 0) printf("%d\n", ((unsigned short*)image1)[i] - ((unsigned short*)image1)[i] );
     }
     }
     else{
       for(int i=0; i < ncols*nrows; i++){
-        if(((unsigned char*)image1)[i] != ((unsigned char*)image2)[i] ) {printf("error at %d %d aborting\n", i/ncols, i%ncols); break;}
+        if(((unsigned char*)image1)[i] != ((unsigned char*)image2)[i] ) {
+        fprintf(out, "error at %d %d diff %d %d %d\n", i/ncols, i%ncols, ((unsigned char*)image1)[i] - ((unsigned char*)image2)[i], ((unsigned char*)image1)[i] , ((unsigned char*)image2)[i] );  
+        error+=1;}
        // if(i % 1000 == 0) printf("%d\n", ((unsigned short*)image1)[i] - ((unsigned short*)image1)[i] );
     }  
     }
-   // printf("files are the same\n");
+    printf("-----\nTot errors occurred: %d out of %d pixels %.2f pc \nMore info in err.log\n", error, nrows*ncols, ((float)error)/(nrows*ncols)*100);
+    fclose(out);
 
     return 0;
 }
