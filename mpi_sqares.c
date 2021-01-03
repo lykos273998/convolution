@@ -205,7 +205,7 @@ void get_GAUSSIAN_kernel(double* kernel, unsigned int kernel_size){
             
         }
     }
-   // printf("normalization is %f \n", cc);
+   // //printf("normalization is %f \n", cc);
 }
 
 void get_WEIGHT_kernel(double* kernel, unsigned int kernel_size, double w){
@@ -219,7 +219,7 @@ void get_WEIGHT_kernel(double* kernel, unsigned int kernel_size, double w){
     }
     kernel[s*kernel_size + s] = w;
     
-   // printf("normalization is %f \n", cc);
+   // //printf("normalization is %f \n", cc);
 }
 
 
@@ -273,7 +273,7 @@ void get_start_position(int nrows, int myid, int numprocs, int kernel_size, int*
 
 void convolve_1B(unsigned char * source,int nrows,int ncols,double * kernel, int kernel_size, unsigned char *result){
     
-    //printf("S %d \n", s);
+    ////printf("S %d \n", s);
     
     //interior convolution
 
@@ -283,12 +283,12 @@ void convolve_1B(unsigned char * source,int nrows,int ncols,double * kernel, int
     double tmp;
     int s = kernel_size/2;
     
-    //printf("Processing Interior\n");
+    ////printf("Processing Interior\n");
     //int ns = nrows/omp_get_num_threads();
     int ns = s + 1;
     int remainder = nrows - s - ((nrows - 2*s) % ns);
-    //printf("remainder %d", (remainder - s)%ns);
-    //printf("Processing Interior\n");
+    ////printf("remainder %d", (remainder - s)%ns);
+    ////printf("Processing Interior\n");
     #pragma omp for nowait
     for(int cc = s; cc < remainder; cc+=ns){    
         for(int i = cc; i < cc+ns; i++){
@@ -307,7 +307,7 @@ void convolve_1B(unsigned char * source,int nrows,int ncols,double * kernel, int
         }
         }
             result[res_index] = (unsigned char)tmp;
-           // printf("%f ", tmp);
+           // //printf("%f ", tmp);
 
 
     }  
@@ -339,11 +339,11 @@ void convolve_1B(unsigned char * source,int nrows,int ncols,double * kernel, int
     
     //img_index, k_index, res_index;
     //halo up
-    //printf("Processing HALO UP\n");
+    ////printf("Processing HALO UP\n");
     
     
     
-    //printf("Processing HALO UP\n");
+    ////printf("Processing HALO UP\n");
     #pragma omp for schedule(dynamic,ns) nowait
     for(int i = 0; i <s; i++){
         for(int j = s; j < ncols - s; j++){
@@ -371,7 +371,7 @@ void convolve_1B(unsigned char * source,int nrows,int ncols,double * kernel, int
     
     
     
-    //printf("Processing HALO DOWN\n");
+    ////printf("Processing HALO DOWN\n");
     #pragma omp for schedule(dynamic,ns) nowait
     for(int i = nrows - s; i < nrows; i++){
         for(int j = s; j < ncols - s; j++){
@@ -401,7 +401,7 @@ void convolve_1B(unsigned char * source,int nrows,int ncols,double * kernel, int
     //halo left
     
     #pragma omp for schedule(dynamic,ns) nowait
-    //printf("Processing HALO LEFT\n");
+    ////printf("Processing HALO LEFT\n");
     for(int i = s; i < nrows - s; i++){
         for(int j = 0; j < s; j++){
             res_index = i*ncols + j;
@@ -428,7 +428,7 @@ void convolve_1B(unsigned char * source,int nrows,int ncols,double * kernel, int
     //halo right
     
     
-    //printf("Processing HALO RIGHT\n");
+    ////printf("Processing HALO RIGHT\n");
     #pragma omp for schedule(dynamic,ns) nowait
     for(int i = s; i < nrows - s; i++){
         for(int j = ncols - s; j < ncols; j++){
@@ -456,7 +456,7 @@ void convolve_1B(unsigned char * source,int nrows,int ncols,double * kernel, int
     
     
     
-    //printf("Processing Q UP LEFT\n");
+    ////printf("Processing Q UP LEFT\n");
     #pragma omp for schedule(dynamic,ns) nowait
     for(int i = 0; i < s; i++){
         for(int j = 0; j < s; j++){
@@ -483,7 +483,7 @@ void convolve_1B(unsigned char * source,int nrows,int ncols,double * kernel, int
     
 
    
-    //printf("Processing Q UP RIGHT\n");
+    ////printf("Processing Q UP RIGHT\n");
     #pragma omp for schedule(dynamic,ns) nowait
     for(int i = 0; i < s; i++){
         for(int j = ncols - s; j < ncols; j++){
@@ -510,7 +510,7 @@ void convolve_1B(unsigned char * source,int nrows,int ncols,double * kernel, int
     
 
     
-    //printf("Processing Q DOWN LEFT\n");
+    ////printf("Processing Q DOWN LEFT\n");
     #pragma omp for schedule(dynamic,ns) nowait
     for(int i = nrows - s; i < nrows; i++){
         for(int j = 0; j < s; j++){
@@ -538,7 +538,7 @@ void convolve_1B(unsigned char * source,int nrows,int ncols,double * kernel, int
 
     
 
-    //printf("Processing Q DOWN RIGHT\n");
+    ////printf("Processing Q DOWN RIGHT\n");
     #pragma omp for schedule(dynamic,ns) nowait
     for(int i = nrows - s; i < nrows; i++){
         for(int j = ncols - s; j < ncols; j++){
@@ -567,12 +567,12 @@ void convolve_1B(unsigned char * source,int nrows,int ncols,double * kernel, int
     
     
     }
-    //printf("Processing finished successfully!\n");
+    ////printf("Processing finished successfully!\n");
 }
 
 void convolve_2B(unsigned short int* source,int nrows,int ncols,double * kernel, int kernel_size, unsigned short int* result){
     
-    //printf("S %d \n", s);
+    ////printf("S %d \n", s);
     
     //interior convolution
 
@@ -582,12 +582,12 @@ void convolve_2B(unsigned short int* source,int nrows,int ncols,double * kernel,
     double tmp;
     int s = kernel_size/2;
     
-    //printf("Processing Interior\n");
+    ////printf("Processing Interior\n");
     //int ns = nrows/omp_get_num_threads();
     int ns = s + 1;
     int remainder = nrows - s - ((nrows - 2*s) % ns);
-    //printf("remainder %d", (remainder - s)%ns);
-    //printf("Processing Interior\n");
+    ////printf("remainder %d", (remainder - s)%ns);
+    ////printf("Processing Interior\n");
     #pragma omp for nowait
     for(int cc = s; cc < remainder; cc+=ns){    
         for(int i = cc; i < cc+ns; i++){
@@ -606,7 +606,7 @@ void convolve_2B(unsigned short int* source,int nrows,int ncols,double * kernel,
         }
         }
             result[res_index] = (unsigned short)tmp;
-           // printf("%f ", tmp);
+           // //printf("%f ", tmp);
 
 
     }  
@@ -638,11 +638,11 @@ void convolve_2B(unsigned short int* source,int nrows,int ncols,double * kernel,
     
     //img_index, k_index, res_index;
     //halo up
-    //printf("Processing HALO UP\n");
+    ////printf("Processing HALO UP\n");
     
     
     
-    //printf("Processing HALO UP\n");
+    ////printf("Processing HALO UP\n");
     #pragma omp for schedule(dynamic,ns) nowait
     for(int i = 0; i <s; i++){
         for(int j = s; j < ncols - s; j++){
@@ -669,7 +669,7 @@ void convolve_2B(unsigned short int* source,int nrows,int ncols,double * kernel,
     
     
     
-    //printf("Processing HALO DOWN\n");
+    ////printf("Processing HALO DOWN\n");
     #pragma omp for schedule(dynamic,ns) nowait
     for(int i = nrows - s; i < nrows; i++){
         for(int j = s; j < ncols - s; j++){
@@ -696,7 +696,7 @@ void convolve_2B(unsigned short int* source,int nrows,int ncols,double * kernel,
     //halo left
     
     #pragma omp for schedule(dynamic,ns) nowait
-    //printf("Processing HALO LEFT\n");
+    ////printf("Processing HALO LEFT\n");
     for(int i = s; i < nrows - s; i++){
         for(int j = 0; j < s; j++){
             res_index = i*ncols + j;
@@ -722,7 +722,7 @@ void convolve_2B(unsigned short int* source,int nrows,int ncols,double * kernel,
     //halo right
     
     
-    //printf("Processing HALO RIGHT\n");
+    ////printf("Processing HALO RIGHT\n");
     #pragma omp for schedule(dynamic,ns) nowait
     for(int i = s; i < nrows - s; i++){
         for(int j = ncols - s; j < ncols; j++){
@@ -749,7 +749,7 @@ void convolve_2B(unsigned short int* source,int nrows,int ncols,double * kernel,
     
     
     
-    //printf("Processing Q UP LEFT\n");
+    ////printf("Processing Q UP LEFT\n");
     #pragma omp for schedule(dynamic,ns) nowait
     for(int i = 0; i < s; i++){
         for(int j = 0; j < s; j++){
@@ -774,7 +774,7 @@ void convolve_2B(unsigned short int* source,int nrows,int ncols,double * kernel,
     }  
     
    
-    //printf("Processing Q UP RIGHT\n");
+    ////printf("Processing Q UP RIGHT\n");
     #pragma omp for schedule(dynamic,ns) nowait
     for(int i = 0; i < s; i++){
         for(int j = ncols - s; j < ncols; j++){
@@ -799,7 +799,7 @@ void convolve_2B(unsigned short int* source,int nrows,int ncols,double * kernel,
     }  
     
     
-    //printf("Processing Q DOWN LEFT\n");
+    ////printf("Processing Q DOWN LEFT\n");
     #pragma omp for schedule(dynamic,ns) nowait
     for(int i = nrows - s; i < nrows; i++){
         for(int j = 0; j < s; j++){
@@ -824,7 +824,7 @@ void convolve_2B(unsigned short int* source,int nrows,int ncols,double * kernel,
     }  
     
     
-    //printf("Processing Q DOWN RIGHT\n");
+    ////printf("Processing Q DOWN RIGHT\n");
     #pragma omp for schedule(dynamic,ns) nowait
     for(int i = nrows - s; i < nrows; i++){
         for(int j = ncols - s; j < ncols; j++){
@@ -852,7 +852,7 @@ void convolve_2B(unsigned short int* source,int nrows,int ncols,double * kernel,
     
     
     }
-    printf("Processing finished successfully!\n");
+    //printf("Processing finished successfully!\n");
 }
 
 
@@ -881,6 +881,717 @@ void sub_matrix_dim(int nrows, int ncols, int *proc_dim, int *proc_coord, int *s
 }
 
 
+void exchange_halos_2B(unsigned short* my_img,int* my_img_dims, unsigned short** halos, int* grid_dims, int my_rank, int* grid_coords, int kernel_size, MPI_Comm mpi_communicator){
+    unsigned short* halo_up, *halo_down, *halo_right, *halo_left;
+    int s = kernel_size/2;
+    /*
+    halo_up = halos[0];
+    halo_right = halos[1];
+    halo_down = halos[2];
+    halo_left = halos[3];
+    */
+    MPI_Datatype HALO;
+    int y = grid_coords[0];
+    int x = grid_coords[1];
+    int nrows = my_img_dims[0];
+    int ncols = my_img_dims[1];
+    int rl, rr, ru, rd;
+    MPI_Status status;
+    MPI_Request request;
+    MPI_Cart_shift(mpi_communicator, 0, 1, &ru, &rd);
+    MPI_Cart_shift(mpi_communicator, 1, 1, &rl, &rr);
+    ////printf("rank %d  nb rl %d rr %d ru %d rd %d cc %d %d \n", my_rank, rl, rr, ru, rd, grid_coords[0], grid_coords[1]);
+    //halo up-down exchange
+
+    //send halo up and recieve down
+    int tag = 117;
+    if(ru >= 0){
+        int start_point[2];
+        start_point[0] = 0;
+        start_point[1] = 0;
+        int halo_dims[2];
+        halo_dims[0] = s;
+        halo_dims[1] = ncols;
+
+        MPI_Type_create_subarray(2, my_img_dims, halo_dims, start_point, MPI_ORDER_C, MPI_UNSIGNED_SHORT, &HALO);
+        MPI_Type_commit(&HALO);
+        MPI_Isend(my_img, 1, HALO, ru, tag, mpi_communicator, &request);
+        
+        
+    }
+    if(y == grid_dims[0]-1){
+        halo_down = NULL;
+        }
+    else{
+        halo_down = (unsigned short*)malloc(sizeof(unsigned short)* s*ncols);
+        MPI_Recv(halo_down, s*ncols, MPI_UNSIGNED_SHORT, rd, tag, mpi_communicator, &status);  
+        }
+
+    if(rd >= 0){
+        int start_point[2];
+        start_point[0] = nrows - s;
+        start_point[1] = 0;
+        int halo_dims[2];
+        halo_dims[0] = s;
+        halo_dims[1] = ncols;
+
+        MPI_Type_create_subarray(2, my_img_dims, halo_dims, start_point, MPI_ORDER_C, MPI_UNSIGNED_SHORT, &HALO);
+        MPI_Type_commit(&HALO);
+        MPI_Isend(my_img, 1, HALO, rd , rd, mpi_communicator, &request);
+        
+        
+    }
+    if(y == 0){
+        halo_up = NULL;
+        }
+    else{
+        halo_up = (unsigned short*)malloc(sizeof(unsigned short)* s*ncols);
+        MPI_Recv(halo_up, s*ncols, MPI_UNSIGNED_SHORT, ru, my_rank, mpi_communicator, &status);  
+        }
+
+
+
+    if(rr >= 0 ){
+        int start_point[2];
+        start_point[0] = 0;
+        start_point[1] = ncols - s;
+        int halo_dims[2];
+        halo_dims[0] = nrows;
+        halo_dims[1] = s;
+
+        MPI_Type_create_subarray(2, my_img_dims, halo_dims, start_point, MPI_ORDER_C, MPI_UNSIGNED_SHORT, &HALO);
+        MPI_Type_commit(&HALO);
+        MPI_Isend(my_img, 1, HALO, rr , rr, mpi_communicator, &request);
+        
+        
+    }
+    if(x == 0){
+        halo_left = NULL;
+        }
+    else{
+        halo_left = (unsigned short*)malloc(sizeof(unsigned short)* s*nrows);
+        MPI_Recv(halo_left, s*nrows, MPI_UNSIGNED_SHORT, rl, my_rank, mpi_communicator, &status)  ;
+        }
+
+
+    
+    if(rl >= 0 ){
+        int start_point[2];
+        start_point[0] = 0;
+        start_point[1] = 0;
+        int halo_dims[2];
+        halo_dims[0] = nrows;
+        halo_dims[1] = s;
+
+        MPI_Type_create_subarray(2, my_img_dims, halo_dims, start_point, MPI_ORDER_C, MPI_UNSIGNED_SHORT, &HALO);
+        MPI_Type_commit(&HALO);
+        MPI_Isend(my_img, 1, HALO, rl , rl, mpi_communicator, &request);
+        
+        
+    }
+    if(x == grid_dims[1] - 1){
+        halo_right = NULL;
+        }
+    else{
+        halo_right = (unsigned short*)malloc(sizeof(unsigned short)* s*nrows);
+        MPI_Recv(halo_right, s*nrows, MPI_UNSIGNED_SHORT, rr, my_rank, mpi_communicator, &status) ; 
+        }
+
+
+    //returning the pointers
+    halos[0] = halo_up;
+    halos[1] = halo_right;
+    halos[2] = halo_down;
+    halos[3] = halo_left;
+    
+}
+
+
+void exchange_Q_2B(unsigned short* my_img,int* my_img_dims, unsigned short** squares, int* grid_dims, int my_rank, int* grid_coords, int kernel_size, MPI_Comm mpi_communicator){
+    
+    unsigned short * QUL, *QUR, *QDL, *QDR;
+
+    int y = grid_coords[0];
+    int x = grid_coords[1];
+    int nrows = my_img_dims[0];
+    int ncols = my_img_dims[1];
+    int s = kernel_size/2;
+    int tag = 123;
+    int r_ul, r_ur, r_dl, r_dr;
+    r_ul = -2;
+    r_ur = -2;
+    r_dr = -2;
+    r_dl = -2;
+
+    int up, down, left, right;
+    MPI_Status status;
+    MPI_Request request;
+    MPI_Datatype QQ;
+    
+    MPI_Cart_shift(mpi_communicator, 0, 1, &up, &down);
+    MPI_Cart_shift(mpi_communicator, 1, 1, &left, &right);
+    //calculating neighbours  -2 is the code fore being at the boundary in some way
+    if(up >= 0) {
+        if(left >= 0) {r_ul = up - 1; }
+        else if (right >=0) {r_ur = up + 1; }
+        else{}
+    }
+    if(down >= 0) {
+        if(left >= 0) {r_dl = down - 1; }
+        else if (right >=0) {r_dr = down + 1; }
+        else{}
+    }
+    ////printf("rank %d  nb r_ul %d r_ur %d r_dr %d r_dl %d cc %d %d \n", my_rank, r_ul, r_ur, r_dr, r_dl, grid_coords[0], grid_coords[1]);
+    //another time this is the foolish part
+    
+    if(r_ul >= 0){
+        int start_point[2];
+        start_point[0] = 0;
+        start_point[1] = 0;
+        int q_dims[2];
+        q_dims[0] = s;
+        q_dims[1] = s;
+
+        MPI_Type_create_subarray(2, my_img_dims, q_dims, start_point, MPI_ORDER_C, MPI_UNSIGNED_SHORT, &QQ);
+        MPI_Type_commit(&QQ);
+        MPI_Isend(my_img, 1, QQ, r_ul, tag, mpi_communicator, &request);
+        
+        
+    }
+    if(y == grid_dims[0]-1 || x == grid_dims[1] - 1){
+        QDR = NULL;
+        }
+    else{
+        QDR = (unsigned short*)malloc(sizeof(unsigned short)*s*s);
+        MPI_Recv(QDR,s*s, MPI_UNSIGNED_SHORT, r_dr, tag,mpi_communicator,&status );
+    }
+
+    if(r_ur >= 0){
+        int start_point[2];
+        start_point[0] = 0;
+        start_point[1] = ncols - s;
+        int q_dims[2];
+        q_dims[0] = s;
+        q_dims[1] = s;
+
+        MPI_Type_create_subarray(2, my_img_dims, q_dims, start_point, MPI_ORDER_C, MPI_UNSIGNED_SHORT, &QQ);
+        MPI_Type_commit(&QQ);
+        MPI_Isend(my_img, 1, QQ, r_ur, tag, mpi_communicator, &request);
+        
+        
+    }
+    if(y == grid_dims[0]-1 || x == 0){
+        QDL = NULL;
+        }
+    else{
+        QDL = (unsigned short*)malloc(sizeof(unsigned short)*s*s);
+        MPI_Recv(QDL,s*s, MPI_UNSIGNED_SHORT, r_dl, tag,mpi_communicator, &status );
+    }
+
+
+    if(r_dr >= 0){
+        int start_point[2];
+        start_point[0] = nrows - s;
+        start_point[1] = ncols - s;
+        int q_dims[2];
+        q_dims[0] = s;
+        q_dims[1] = s;
+
+        MPI_Type_create_subarray(2, my_img_dims, q_dims, start_point, MPI_ORDER_C, MPI_UNSIGNED_SHORT, &QQ);
+        MPI_Type_commit(&QQ);
+        MPI_Isend(my_img, 1, QQ, r_dr, tag, mpi_communicator, &request);
+        
+        
+    }
+    if(y == 0 || x == 0){
+        QUL = NULL;
+        }
+    else{
+        QUL = (unsigned short*)malloc(sizeof(unsigned short)*s*s);
+        MPI_Recv(QUL,s*s, MPI_UNSIGNED_SHORT, r_ul, tag,mpi_communicator,&status );
+    }
+
+    if(r_dl >= 0){
+        int start_point[2];
+        start_point[0] = nrows - s;
+        start_point[1] = 0;
+        int q_dims[2];
+        q_dims[0] = s;
+        q_dims[1] = s;
+
+        MPI_Type_create_subarray(2, my_img_dims, q_dims, start_point, MPI_ORDER_C, MPI_UNSIGNED_SHORT, &QQ);
+        MPI_Type_commit(&QQ);
+        MPI_Isend(my_img, 1, QQ, r_dl, tag, mpi_communicator, &request);
+        
+        
+    }
+    if(y == 0 || x == grid_dims[1] - 1){
+        QUR = NULL;
+        }
+    else{
+        QUR = (unsigned short*)malloc(sizeof(unsigned short)*s*s);
+        MPI_Recv(QUR,s*s, MPI_UNSIGNED_SHORT, r_ur, tag,mpi_communicator, &status );
+    }
+    
+    squares[0] = QUL;
+    squares[1] = QUR;
+    squares[2] = QDR;
+    squares[3] = QDL;
+
+
+
+}
+
+void QQ_convolve_2B(unsigned short** QQ, unsigned short** HALOS, int* sub_matrix_sizes, double* kernel, int kernel_size, unsigned short* res){
+    int s = kernel_size/2;
+    int nrows = sub_matrix_sizes[0];
+    int ncols = sub_matrix_sizes[1];
+    int k_i_start;
+    int k_i_end;
+    int k_j_start;
+    int k_j_end;
+    double tmp ;
+    int res_index, img_index, kernel_index;
+
+    unsigned short * halo_up = HALOS[0];
+    unsigned short * halo_right = HALOS[1];
+    unsigned short * halo_down = HALOS[2];
+    unsigned short * halo_left = HALOS[3];
+
+    unsigned short * QUL = QQ[0];
+    unsigned short * QUR = QQ[1];
+    unsigned short * QDR = QQ[2];
+    unsigned short * QDL = QQ[3];
+    ////printf("hh %p %p %p %p\n", halo_up, halo_right, halo_down, halo_left);
+   // //printf("qq %p %p %p %p\n", QUL, QUR, QDR, QDL);   //halo up
+    
+    
+    if(QUL!=NULL){
+        
+        for(int i = 0; i < s; i++){
+        for(int j = 0; j < s; j++){
+            
+            res_index = i*ncols + j;
+            
+            k_i_start = 0;
+            k_i_end = s - i;
+            k_j_start = 0;
+            k_j_end = s - j;
+            tmp = 0.;
+            for(int k_i = k_i_start; k_i < k_i_end; k_i++ ){
+                
+                for(int k_j = k_j_start; k_j < k_j_end; k_j++ ){
+                    kernel_index = k_i * kernel_size + k_j;
+                    img_index = (i + k_i)*s + (j + k_j);
+                    tmp += kernel[kernel_index] * QUL[img_index];
+                }
+            
+            }
+            res[res_index] += tmp;
+        }
+    }
+    }
+
+    if(QUR!=NULL){
+        
+        for(int i = 0; i < s; i++){
+        for(int j = 0; j < s; j++){
+            
+            res_index = i*ncols + j;
+            
+            k_i_start = 0;
+            k_i_end = s - i;
+            k_j_start = kernel_size - j - 1;
+            k_j_end = kernel_size;
+            tmp = 0.0;
+            res_index = (i)*ncols + j + ncols - s;
+
+            for(int k_i = k_i_start; k_i < k_i_end; k_i++ ){
+                
+                for(int k_j = k_j_start; k_j < k_j_end; k_j++ ){
+                    kernel_index = k_i * kernel_size + k_j;
+                    img_index = (i + k_i)*s + (kernel_size - k_j + 1);
+                    
+                    tmp += kernel[kernel_index] * QUR[img_index];
+                }
+            
+            }
+            res[res_index] += tmp;
+        }
+    }
+    }
+
+
+    if(QDR!=NULL){
+        
+        for(int i = 0; i < s; i++){
+        for(int j = 0; j < s; j++){
+            
+            res_index = i*ncols + j;
+            
+            k_i_start = kernel_size - i - 1;
+            k_i_end = kernel_size;
+            k_j_start = kernel_size - j - 1;
+            k_j_end = kernel_size;
+            tmp = 0.0;
+            res_index = (i + nrows - s)*ncols + j + ncols - s;
+
+            for(int k_i = k_i_start; k_i < k_i_end; k_i++ ){
+                
+                for(int k_j = k_j_start; k_j < k_j_end; k_j++ ){
+                    kernel_index = k_i * kernel_size + k_j;
+                    img_index = (kernel_size - k_i + 1)*s + (kernel_size - k_j + 1);
+                    
+                    tmp += kernel[kernel_index] * QDR[img_index];
+                }
+            
+            }
+            res[res_index] += tmp;
+        }
+    }
+    }
+
+    
+    if(QDL!=NULL){
+        
+        for(int i = 0; i < s; i++){
+        for(int j = 0; j < s; j++){
+            
+            res_index = i*ncols + j;
+            
+            k_i_start = kernel_size - i - 1;
+            k_i_end = kernel_size;
+            k_j_start = 0;
+            k_j_end = s - j;
+            tmp = 0.0;
+            res_index = (i + nrows - s)*ncols + j ;
+
+            for(int k_i = k_i_start; k_i < k_i_end; k_i++ ){
+                
+                for(int k_j = k_j_start; k_j < k_j_end; k_j++ ){
+                    kernel_index = k_i * kernel_size + k_j;
+                    img_index = (kernel_size - k_i + 1)*s + (j + k_j);
+                    
+                    tmp += kernel[kernel_index] * QDL[img_index];
+                }
+            
+            }
+            res[res_index] += tmp;
+        }
+    }
+    }     
+    
+
+}
+
+void halo_convolve_2B(unsigned short** HALOS, int* sub_matrix_sizes, double* kernel, int kernel_size, unsigned short* res){
+    int s = kernel_size/2;
+    int nrows = sub_matrix_sizes[0];
+    int ncols = sub_matrix_sizes[1];
+    int k_i_start;
+    int k_i_end;
+    int k_j_start;
+    int k_j_end;
+    double tmp ;
+    int res_index, img_index, kernel_index;
+    unsigned short * halo_up = HALOS[0];
+    unsigned short * halo_right = HALOS[1];
+    unsigned short * halo_down = HALOS[2];
+    unsigned short * halo_left = HALOS[3];
+
+    
+    //halo up
+    if(halo_up!=NULL){
+        for(int i = 0; i < s; i++){
+        for (int j = 0; j < s; j++){
+            k_i_start = 0;
+            k_i_end = s - i;
+            k_j_start = s - j;
+            k_j_end = kernel_size;
+            tmp = 0.0;
+            res_index = i*ncols+j;
+            for(int k_i = k_i_start; k_i < k_i_end; k_i++){
+            for(int k_j = k_j_start; k_j < k_j_end; k_j++){
+                img_index = (i + k_i)*ncols + (j + k_j - s);
+                kernel_index = k_i * kernel_size + k_j; 
+
+                tmp+= kernel[kernel_index] * halo_up[img_index];                          
+                }
+
+            }
+            res[res_index] += tmp;  
+        }
+        for(int j = s; j < ncols - s; j++){
+            k_i_start = 0;
+            k_i_end = s - i;
+            k_j_start = 0;
+            k_j_end = kernel_size;
+            tmp = 0.0;
+            res_index = i*ncols+j;
+            for(int k_i = k_i_start; k_i < k_i_end; k_i++){
+            for(int k_j = k_j_start; k_j < k_j_end; k_j++){
+                img_index = (i + k_i)*ncols + (j + k_j - s);
+                kernel_index = k_i * kernel_size + k_j; 
+
+                tmp+= kernel[kernel_index] * halo_up[img_index];                          
+                }
+
+            }
+            res[res_index] += tmp;
+
+
+        }
+        for (int j = ncols - s; j < ncols; j++){
+            k_i_start = 0;
+            k_i_end = s - i;
+            k_j_start = 0;
+            k_j_end = kernel_size - (j - (ncols - s));
+            tmp = 0.0;
+            res_index = i*ncols+j;
+            for(int k_i = k_i_start; k_i < k_i_end; k_i++){
+            for(int k_j = k_j_start; k_j < k_j_end; k_j++){
+                img_index = (i + k_i)*ncols + (j + k_j - k_j_end);
+                kernel_index = k_i * kernel_size + k_j; 
+
+                tmp+= kernel[kernel_index] * halo_up[img_index];                          
+                }
+
+            }
+            res[res_index] += tmp;  
+        }
+        }
+    }
+  //halo down
+    if(halo_down!=NULL){
+        for(int i = 0; i < s; i++){
+            for(int j = 0; j < s; j++){
+                k_i_start = kernel_size - i - 1;
+                k_i_end = kernel_size;
+                k_j_start = s - j;
+                k_j_end = kernel_size;
+                tmp = 0.0;
+                res_index = (nrows - s + i)*ncols+j;
+                
+                for(int k_i = k_i_start; k_i < k_i_end; k_i++){
+                for(int k_j = k_j_start; k_j < k_j_end; k_j++){
+                    img_index = (i  + k_i - kernel_size + 1)*ncols + (j + k_j - s);
+                    kernel_index = k_i * kernel_size + k_j; 
+
+                    tmp+= kernel[kernel_index] * halo_down[img_index];                          
+                    }
+
+                }
+                res[res_index] += tmp;
+            }
+            for(int j = s; j < ncols - s; j++){
+
+                k_i_start = kernel_size - i - 1;
+                k_i_end = kernel_size;
+                k_j_start = 0;
+                k_j_end = kernel_size;
+                tmp = 0.0;
+                res_index = (nrows - s + i)*ncols+j;
+                
+                for(int k_i = k_i_start; k_i < k_i_end; k_i++){
+                for(int k_j = k_j_start; k_j < k_j_end; k_j++){
+                    img_index = (i  + k_i - kernel_size + 1)*ncols + (j + k_j - s);
+                    kernel_index = k_i * kernel_size + k_j; 
+
+                    tmp+= kernel[kernel_index] * halo_down[img_index];                          
+                    }
+
+                }
+                res[res_index] += tmp;
+
+
+            }
+            
+            for(int j = ncols - s; j < ncols; j++){
+                k_i_start = kernel_size - i - 1;
+                k_i_end = kernel_size;
+                k_j_start = 0;
+                k_j_end = kernel_size - j + ncols - s;
+                tmp = 0.0;
+                res_index = (nrows - s + i)*ncols+j;
+                
+                for(int k_i = k_i_start; k_i < k_i_end; k_i++){
+                for(int k_j = k_j_start; k_j < k_j_end; k_j++){
+                    img_index = (i  + k_i - kernel_size + 1)*ncols + (j + k_j - s);
+                    kernel_index = k_i * kernel_size + k_j; 
+
+                    tmp+= kernel[kernel_index] * halo_down[img_index];                          
+                    }
+
+                }
+                res[res_index] += tmp;
+            }
+            
+        }
+    }
+
+    //halo right
+
+    if(halo_right!=NULL){
+        for(int i = 0; i < s; i++){
+            for(int j = 0; j < s; j++){
+                k_i_start = s - i;
+                k_i_end = kernel_size;
+                k_j_start = kernel_size - j - 1;
+                k_j_end = kernel_size;
+                tmp = 0.0;
+                res_index = (i)*ncols + j + ncols - s;
+                
+                for(int k_i = k_i_start; k_i < k_i_end; k_i++){
+                for(int k_j = k_j_start; k_j < k_j_end; k_j++){
+                    img_index = (i  + k_i - s)*s + (j + k_j - kernel_size + 1);
+                    kernel_index = k_i * kernel_size + k_j; 
+
+                    tmp+= kernel[kernel_index] * halo_right[img_index];   
+
+                    }
+
+                }
+               res[res_index] += tmp;
+
+
+            }
+        }
+        for(int i = s; i < nrows - s; i++){
+            for(int j = 0; j < s; j++){
+                k_i_start = 0;
+                k_i_end = kernel_size;
+                k_j_start = kernel_size - j - 1;
+                k_j_end = kernel_size;
+                tmp = 0.0;
+                res_index = (i)*ncols + j + ncols - s;
+                
+                for(int k_i = k_i_start; k_i < k_i_end; k_i++){
+                for(int k_j = k_j_start; k_j < k_j_end; k_j++){
+                    img_index = (i  + k_i - s)*s + (j + k_j - kernel_size + 1);
+                    kernel_index = k_i * kernel_size + k_j; 
+
+                    tmp+= kernel[kernel_index] * halo_right[img_index];   
+
+                    }
+
+                }
+                res[res_index] += tmp;
+
+
+            }
+
+        }
+        for(int i = nrows - s; i < nrows; i++){
+            for(int j = 0; j < s; j++){
+                k_i_start = 0;
+                k_i_end = kernel_size - i + nrows - s;
+                k_j_start = kernel_size - j - 1;
+                k_j_end = kernel_size;
+                tmp = 0.0;
+                res_index = (i)*ncols + j + ncols - s;
+                
+                for(int k_i = k_i_start; k_i < k_i_end; k_i++){
+                for(int k_j = k_j_start; k_j < k_j_end; k_j++){
+                    img_index = (i  + k_i - s)*s + (j + k_j - kernel_size + 1);
+                    kernel_index = k_i * kernel_size + k_j; 
+
+                    tmp+= kernel[kernel_index] * halo_right[img_index];   
+
+                    }
+
+                }
+                res[res_index] += tmp;
+
+
+            }
+        }
+    }
+
+    if(halo_left!=NULL){
+        for(int i = 0; i < s; i++){
+            for(int j = 0; j < s; j++){
+                k_i_start = s - i;
+                k_i_end = kernel_size;
+                k_j_start = 0;
+                k_j_end = s - j;
+                tmp = 0.0;
+                res_index = (i)*ncols + j;
+                
+                for(int k_i = k_i_start; k_i < k_i_end; k_i++){
+                for(int k_j = k_j_start; k_j < k_j_end; k_j++){
+                    img_index = (i  +  k_i - s)*s + (j + k_j); // (i + k_i)*ncols + (j + k_j - s)
+                    kernel_index = k_i * kernel_size + k_j;  
+
+                    tmp+= kernel[kernel_index] * halo_left[img_index];   
+
+                    }
+
+                }
+                res[res_index] += tmp;
+
+
+            }
+        }
+        for(int i = s; i < nrows - s; i++){
+            for(int j = 0; j < s; j++){
+                k_i_start = 0;
+                k_i_end = kernel_size;
+                k_j_start = 0;
+                k_j_end = s - j;
+                tmp = 0.0;
+                res_index = (i)*ncols + j;
+                
+                for(int k_i = k_i_start; k_i < k_i_end; k_i++){
+                for(int k_j = k_j_start; k_j < k_j_end; k_j++){
+                    img_index = (i  +  k_i - s)*s + (j + k_j); // (i + k_i)*ncols + (j + k_j - s)
+                    kernel_index = k_i * kernel_size + k_j;  
+
+                    tmp+= kernel[kernel_index] * halo_left[img_index];   
+
+                    }
+
+                }
+                res[res_index] += tmp;
+
+
+            }
+        }
+        for(int i = nrows - s; i < nrows; i++){
+            for(int j = 0; j < s; j++){
+                k_i_start = 0;
+                k_i_end = kernel_size - i + nrows - s;
+                k_j_start = 0;
+                k_j_end = s - j;
+                tmp = 0.0;
+                res_index = (i)*ncols + j;
+                
+                for(int k_i = k_i_start; k_i < k_i_end; k_i++){
+                for(int k_j = k_j_start; k_j < k_j_end; k_j++){
+                    img_index = (i  +  k_i - s)*s + (j + k_j); // (i + k_i)*ncols + (j + k_j - s)
+                    kernel_index = k_i * kernel_size + k_j;  
+
+                    tmp+= kernel[kernel_index] * halo_left[img_index];   
+
+                    }
+
+                }
+                res[res_index] += tmp;
+
+
+            }
+        }
+    }
+
+
+
+
+
+}
+
+
+
+
+
 void exchange_halos_1B(unsigned char* my_img,int* my_img_dims, unsigned char** halos, int* grid_dims, int my_rank, int* grid_coords, int kernel_size, MPI_Comm mpi_communicator){
     unsigned char* halo_up, *halo_down, *halo_right, *halo_left;
     int s = kernel_size/2;
@@ -900,7 +1611,7 @@ void exchange_halos_1B(unsigned char* my_img,int* my_img_dims, unsigned char** h
     MPI_Request request;
     MPI_Cart_shift(mpi_communicator, 0, 1, &ru, &rd);
     MPI_Cart_shift(mpi_communicator, 1, 1, &rl, &rr);
-    //printf("rank %d  nb rl %d rr %d ru %d rd %d cc %d %d \n", my_rank, rl, rr, ru, rd, grid_coords[0], grid_coords[1]);
+    ////printf("rank %d  nb rl %d rr %d ru %d rd %d cc %d %d \n", my_rank, rl, rr, ru, rd, grid_coords[0], grid_coords[1]);
     //halo up-down exchange
 
     //send halo up and recieve down
@@ -1041,7 +1752,7 @@ void exchange_Q_1B(unsigned char* my_img,int* my_img_dims, unsigned char** squar
         else if (right >=0) {r_dr = down + 1; }
         else{}
     }
-    //printf("rank %d  nb r_ul %d r_ur %d r_dr %d r_dl %d cc %d %d \n", my_rank, r_ul, r_ur, r_dr, r_dl, grid_coords[0], grid_coords[1]);
+    ////printf("rank %d  nb r_ul %d r_ur %d r_dr %d r_dl %d cc %d %d \n", my_rank, r_ul, r_ur, r_dr, r_dl, grid_coords[0], grid_coords[1]);
     //another time this is the foolish part
     
     if(r_ul >= 0){
@@ -1162,8 +1873,8 @@ void QQ_convolve_1B(unsigned char** QQ, unsigned char** HALOS, int* sub_matrix_s
     unsigned char * QUR = QQ[1];
     unsigned char * QDR = QQ[2];
     unsigned char * QDL = QQ[3];
-    //printf("hh %p %p %p %p\n", halo_up, halo_right, halo_down, halo_left);
-   // printf("qq %p %p %p %p\n", QUL, QUR, QDR, QDL);   //halo up
+    ////printf("hh %p %p %p %p\n", halo_up, halo_right, halo_down, halo_left);
+   // //printf("qq %p %p %p %p\n", QUL, QUR, QDR, QDL);   //halo up
     
     
     if(QUL!=NULL){
@@ -1221,96 +1932,66 @@ void QQ_convolve_1B(unsigned char** QQ, unsigned char** HALOS, int* sub_matrix_s
     }
     }
 
-    
-            
-     
-    /*
-    //halo down
-    if(halo_down!=NULL){
+
+    if(QDR!=NULL){
+        
         for(int i = 0; i < s; i++){
-            for(int j = s; j < ncols - s; j++){
-                k_i_start = kernel_size - i - 1;
-                k_i_end = kernel_size;
-                k_j_start = 0;
-                k_j_end = kernel_size;
-                tmp = 0.0;
-                res_index = (nrows - s + i)*ncols+j;
+        for(int j = 0; j < s; j++){
+            
+            res_index = i*ncols + j;
+            
+            k_i_start = kernel_size - i - 1;
+            k_i_end = kernel_size;
+            k_j_start = kernel_size - j - 1;
+            k_j_end = kernel_size;
+            tmp = 0.0;
+            res_index = (i + nrows - s)*ncols + j + ncols - s;
+
+            for(int k_i = k_i_start; k_i < k_i_end; k_i++ ){
                 
-                for(int k_i = k_i_start; k_i < k_i_end; k_i++){
-                for(int k_j = k_j_start; k_j < k_j_end; k_j++){
-                    img_index = (i  + k_i - kernel_size + 1)*ncols + (j + k_j - s);
-                    kernel_index = k_i * kernel_size + k_j; 
-
-                    tmp+= kernel[kernel_index] * halo_down[img_index];                          
-                    }
-
+                for(int k_j = k_j_start; k_j < k_j_end; k_j++ ){
+                    kernel_index = k_i * kernel_size + k_j;
+                    img_index = (kernel_size - k_i + 1)*s + (kernel_size - k_j + 1);
+                    
+                    tmp += kernel[kernel_index] * QDR[img_index];
                 }
-                res[res_index] += tmp;
-
-
+            
             }
+            res[res_index] += tmp;
         }
     }
-
-    //halo right
-
-    if(halo_right!=NULL){
-        for(int i = s; i < nrows - s; i++){
-            for(int j = 0; j < s; j++){
-                k_i_start = 0;
-                k_i_end = kernel_size;
-                k_j_start = kernel_size - j - 1;
-                k_j_end = kernel_size;
-                tmp = 0.0;
-                res_index = (i)*ncols + j + ncols - s;
-                
-                for(int k_i = k_i_start; k_i < k_i_end; k_i++){
-                for(int k_j = k_j_start; k_j < k_j_end; k_j++){
-                    img_index = (i  + k_i - s)*s + (j + k_j - kernel_size + 1);
-                    kernel_index = k_i * kernel_size + k_j; 
-
-                    tmp+= kernel[kernel_index] * halo_right[img_index];   
-
-                    }
-
-                }
-                res[res_index] += tmp;
-
-
-            }
-        }
     }
 
-    if(halo_left!=NULL){
-        for(int i = s; i < nrows - s; i++){
-            for(int j = 0; j < s; j++){
-                k_i_start = 0;
-                k_i_end = kernel_size;
-                k_j_start = 0;
-                k_j_end = s - j;
-                tmp = 0.0;
-                res_index = (i)*ncols + j;
+    
+    if(QDL!=NULL){
+        
+        for(int i = 0; i < s; i++){
+        for(int j = 0; j < s; j++){
+            
+            res_index = i*ncols + j;
+            
+            k_i_start = kernel_size - i - 1;
+            k_i_end = kernel_size;
+            k_j_start = 0;
+            k_j_end = s - j;
+            tmp = 0.0;
+            res_index = (i + nrows - s)*ncols + j ;
+
+            for(int k_i = k_i_start; k_i < k_i_end; k_i++ ){
                 
-                for(int k_i = k_i_start; k_i < k_i_end; k_i++){
-                for(int k_j = k_j_start; k_j < k_j_end; k_j++){
-                    img_index = (i  +  k_i - s)*s + (j + k_j); // (i + k_i)*ncols + (j + k_j - s)
-                    kernel_index = k_i * kernel_size + k_j;  
-
-                    tmp+= kernel[kernel_index] * halo_left[img_index];   
-
-                    }
-
+                for(int k_j = k_j_start; k_j < k_j_end; k_j++ ){
+                    kernel_index = k_i * kernel_size + k_j;
+                    img_index = (kernel_size - k_i + 1)*s + (j + k_j);
+                    
+                    tmp += kernel[kernel_index] * QDL[img_index];
                 }
-                res[res_index] += tmp;
-
-
+            
             }
+            res[res_index] += tmp;
         }
     }
-
-
-    */
-
+    }     
+    
 
 }
 
@@ -1702,7 +2383,7 @@ int main(int argc, char**argv){
 
     }
 
-    //printf("---KERNEL---\n");
+    ////printf("---KERNEL---\n");
     //print_kernel(kernel,kernel_size);
     
     void* source;
@@ -1785,10 +2466,10 @@ int main(int argc, char**argv){
         MPI_Recv(my_img, len, MPI_UNSIGNED_CHAR, 0, tag, grid_comm, &status);
         exchange_halos_1B(my_img, sub_mat_sizes, HALOS, grid_dims, grid_rank, grid_coords, kernel_size, grid_comm );
         exchange_Q_1B(my_img, sub_mat_sizes, QQ, grid_dims, grid_rank, grid_coords, kernel_size, grid_comm);
-        //printf("%d %d sub_mat_sizes\n", sub_mat_sizes[0], sub_mat_sizes[1]);
+        ////printf("%d %d sub_mat_sizes\n", sub_mat_sizes[0], sub_mat_sizes[1]);
         convolve_1B(my_img, sub_mat_sizes[0], sub_mat_sizes[1], kernel, kernel_size, my_res);
         halo_convolve_1B(HALOS, sub_mat_sizes, kernel, kernel_size, my_res);
-        QQ_convolve_1B(QQ, HALOS, sub_mat_sizes, kernel, kernel_size, my_res);
+        //QQ_convolve_1B(QQ, HALOS, sub_mat_sizes, kernel, kernel_size, my_res);
 
         MPI_Isend(my_res, len, MPI_UNSIGNED_CHAR, 0, tag, grid_comm, &request);
 
@@ -1810,7 +2491,7 @@ int main(int argc, char**argv){
         if ( I_M_LITTLE_ENDIAN ) swap_image( final_res, ncols, nrows, maxval);
         write_pgm_image(final_res, maxval,ncols, nrows, out_file);
         //write_pgm_image(HALOS[1], maxval, s, sub_mat_sizes[0], out_file);
-        //printf("%p %p %p %p\n", QQ[0], QQ[1], QQ[2], QQ[3]);
+        ////printf("%p %p %p %p\n", QQ[0], QQ[1], QQ[2], QQ[3]);
        
         }
         
@@ -1839,12 +2520,12 @@ int main(int argc, char**argv){
             
             convolve_1B(my_img, sub_mat_sizes[0], sub_mat_sizes[1], kernel, kernel_size, res);
             halo_convolve_1B(HALOS, sub_mat_sizes, kernel, kernel_size, res);
-            printf("sq %d %p %p %p %p\n",grid_rank, QQ[0], QQ[1], QQ[2], QQ[3]);
-            //printf("halo %d %p %p %p %p\n",grid_rank, HALOS[0], HALOS[1], HALOS[2], HALOS[3]);
+            //printf("sq %d %p %p %p %p\n",grid_rank, QQ[0], QQ[1], QQ[2], QQ[3]);
+            ////printf("halo %d %p %p %p %p\n",grid_rank, HALOS[0], HALOS[1], HALOS[2], HALOS[3]);
             QQ_convolve_1B(QQ, HALOS, sub_mat_sizes, kernel, kernel_size, res);
             MPI_Send(res, len, MPI_UNSIGNED_CHAR, 0, tag, grid_comm);
 
-            //printf("%d %d %d %d \n", grid_coords[0], grid_coords[1], sub_mat_sizes[0], sub_mat_sizes[1]);
+            ////printf("%d %d %d %d \n", grid_coords[0], grid_coords[1], sub_mat_sizes[0], sub_mat_sizes[1]);
             //if (grid_rank == 2) write_pgm_image(HALOS[1], maxval,s,sub_mat_sizes[0],  "cc.pgm");
 
           
@@ -1861,7 +2542,7 @@ int main(int argc, char**argv){
         if(I_AM_MASTER){
             unsigned short* bf_to_send = (unsigned short*)source;
             unsigned short* final_res = (unsigned short*)malloc(nrows*ncols*sizeof(unsigned short));
-            for(int p = 1; p < numprocs; p++){
+            for(int p = 0; p < numprocs; p++){
             
                 int recv_coords[2];
                 MPI_Cart_coords(grid_comm, p, 2 , recv_coords);
@@ -1872,21 +2553,59 @@ int main(int argc, char**argv){
                 
                 MPI_Type_create_subarray(2, tot_dims, sub_mat_sizes, start_point, MPI_ORDER_C, MPI_UNSIGNED_SHORT, &chunk);
                 MPI_Type_commit(&chunk);
-                MPI_Send(bf_to_send, 1, chunk, p, tag, grid_comm);
-                MPI_Recv(final_res, 1, chunk, p, p, grid_comm, &status);
+                MPI_Isend(bf_to_send, 1, chunk, p, tag, grid_comm, &request);
                 MPI_Type_free(&chunk);
 
 
             
           }
+        
+        unsigned short* HALOS[4] = {NULL, NULL, NULL, NULL};
+        unsigned short* QQ[4] = {NULL, NULL, NULL, NULL};
+        int sub_mat_sizes[2], start_point[2];
+            
+            
+        sub_matrix_dim(nrows, ncols, grid_dims, grid_coords, sub_mat_sizes, start_point);
+        int len = sub_mat_sizes[0]*sub_mat_sizes[1];
+        unsigned short* my_img = (unsigned short *)malloc(len*sizeof(unsigned short*));
+        unsigned short* my_res = (unsigned short *)malloc(len*sizeof(unsigned short*));
+
+
+        MPI_Recv(my_img, len, MPI_UNSIGNED_SHORT, 0, tag, grid_comm, &status);
+        exchange_halos_2B(my_img, sub_mat_sizes, HALOS, grid_dims, grid_rank, grid_coords, kernel_size, grid_comm );
+        exchange_Q_2B(my_img, sub_mat_sizes, QQ, grid_dims, grid_rank, grid_coords, kernel_size, grid_comm);
+        ////printf("%d %d sub_mat_sizes\n", sub_mat_sizes[0], sub_mat_sizes[1]);
+        convolve_2B(my_img, sub_mat_sizes[0], sub_mat_sizes[1], kernel, kernel_size, my_res);
+        halo_convolve_2B(HALOS, sub_mat_sizes, kernel, kernel_size, my_res);
+        //QQ_convolve_1B(QQ, HALOS, sub_mat_sizes, kernel, kernel_size, my_res);
+
+        MPI_Isend(my_res, len, MPI_UNSIGNED_SHORT, 0, tag, grid_comm, &request);
+
+        for(int p = 0; p < numprocs; p++){
+            
+                int recv_coords[2];
+                MPI_Cart_coords(grid_comm, p, 2 , recv_coords);
+            
+                int sub_mat_sizes[2], start_point[2];
+                sub_matrix_dim(nrows, ncols, grid_dims, recv_coords, sub_mat_sizes, start_point);
+                MPI_Datatype chunk;
+                
+                MPI_Type_create_subarray(2, tot_dims, sub_mat_sizes, start_point, MPI_ORDER_C, MPI_UNSIGNED_SHORT, &chunk);
+                MPI_Type_commit(&chunk);
+                MPI_Recv(final_res, 1, chunk, p, tag, grid_comm, &status);
+                MPI_Type_free(&chunk);
+          }
+
         if ( I_M_LITTLE_ENDIAN ) swap_image( final_res, ncols, nrows, maxval);
-          write_pgm_image(final_res, maxval, ncols, nrows, out_file);
+        write_pgm_image(final_res, maxval,ncols, nrows, out_file);
+        //write_pgm_image(HALOS[1], maxval, s, sub_mat_sizes[0], out_file);
+        ////printf("%p %p %p %p\n", QQ[0], QQ[1], QQ[2], QQ[3]);
        
         }
         
 
         else{
-           
+            int grid_coords[2];
             MPI_Cart_coords(grid_comm, grid_rank, 2 , grid_coords);
             int sub_mat_sizes[2], start_point[2];
             
@@ -1895,11 +2614,30 @@ int main(int argc, char**argv){
             int len = sub_mat_sizes[0]*sub_mat_sizes[1];
             
             unsigned short* my_img =(unsigned short*) malloc(len*sizeof(unsigned short));
+            unsigned short* res =(unsigned short*) malloc(len*sizeof(unsigned short));
             MPI_Recv(my_img, len, MPI_UNSIGNED_SHORT, 0, tag, grid_comm, &status);
-            MPI_Send(my_img, len, MPI_UNSIGNED_SHORT, 0, grid_rank, grid_comm);
+            unsigned short* HALOS[4];
+            HALOS[0] = NULL;
+            HALOS[1] = NULL;
+            HALOS[2] = NULL;
+            HALOS[3] = NULL;
+            exchange_halos_2B(my_img, sub_mat_sizes, HALOS, grid_dims, grid_rank, grid_coords, kernel_size, grid_comm );
+            
+            unsigned short* QQ[4] = {NULL, NULL, NULL, NULL};
+            exchange_Q_2B(my_img, sub_mat_sizes, QQ, grid_dims, grid_rank, grid_coords, kernel_size, grid_comm);
+            
+            convolve_2B(my_img, sub_mat_sizes[0], sub_mat_sizes[1], kernel, kernel_size, res);
+            halo_convolve_2B(HALOS, sub_mat_sizes, kernel, kernel_size, res);
+            //printf("sq %d %p %p %p %p\n",grid_rank, QQ[0], QQ[1], QQ[2], QQ[3]);
+            ////printf("halo %d %p %p %p %p\n",grid_rank, HALOS[0], HALOS[1], HALOS[2], HALOS[3]);
+            QQ_convolve_2B(QQ, HALOS, sub_mat_sizes, kernel, kernel_size, res);
+            MPI_Send(res, len, MPI_UNSIGNED_SHORT, 0, tag, grid_comm);
+
+            ////printf("%d %d %d %d \n", grid_coords[0], grid_coords[1], sub_mat_sizes[0], sub_mat_sizes[1]);
+            //if (grid_rank == 2) write_pgm_image(HALOS[1], maxval,s,sub_mat_sizes[0],  "cc.pgm");
+        }
       }
-      
-    }
+          
     }  
     free(kernel);
     //free(source);
