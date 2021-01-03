@@ -173,8 +173,8 @@ void swap_image( void *image, int xsize, int ysize, int maxval )
 }
 
 
-void get_MEAN_kernel(float* kernel, unsigned int kernel_size){
-    float cc = 1./(kernel_size*kernel_size);
+void get_MEAN_kernel(double* kernel, unsigned int kernel_size){
+    double cc = 1./(kernel_size*kernel_size);
     for(int i = 0; i<kernel_size; i++){
         for(int j = 0; j<kernel_size; j++){
             kernel[i*kernel_size+j] = cc;
@@ -182,12 +182,12 @@ void get_MEAN_kernel(float* kernel, unsigned int kernel_size){
     }
 }
 
-float gauss(float x, float y, float sigma){
+double gauss(double x, double y, double sigma){
     return exp(-(x*x + y*y)/(2*sigma*sigma))/(sigma*pow(2*M_PI,0.5));
 }
 
-void get_GAUSSIAN_kernel(float* kernel, unsigned int kernel_size){
-    float sum = 0;
+void get_GAUSSIAN_kernel(double* kernel, unsigned int kernel_size){
+    double sum = 0;
     for(int i = 0; i < kernel_size; i++){
         for(int j = 0; j < kernel_size; j++){
             int x = j - kernel_size/2;
@@ -196,7 +196,7 @@ void get_GAUSSIAN_kernel(float* kernel, unsigned int kernel_size){
             sum+= kernel[i*kernel_size+j];
         }
     }
-    float cc = 0;
+    double cc = 0;
     for(int i = 0; i < kernel_size; i++){
         for(int j = 0; j < kernel_size; j++){
             
@@ -208,7 +208,7 @@ void get_GAUSSIAN_kernel(float* kernel, unsigned int kernel_size){
    // printf("normalization is %f \n", cc);
 }
 
-void get_SHARPEN_kernel(float* kernel, unsigned int kernel_size){
+void get_SHARPEN_kernel(double* kernel, unsigned int kernel_size){
     kernel[0] = 0.;
     kernel[1] = -1.;
     kernel[2] = 0.;
@@ -248,8 +248,25 @@ void get_start_position(int nrows, int myid, int numprocs, int kernel_size, int*
 }
 
 
+void get_WEIGHT_kernel(double* kernel, unsigned int kernel_size, double w){
+    double other = (1.0 - w)/(kernel_size * kernel_size  - 1);
+    int s = kernel_size/2;
+    for(int i = 0; i < kernel_size; i++){
+        for(int j = 0; j < kernel_size; j++){
+            
+            kernel[i*kernel_size + j] = other;
+        }
+    }
+    kernel[s*kernel_size + s] = w;
+    
+   // printf("normalization is %f \n", cc);
+}
 
-void convolve_1B(unsigned char * source,int nrows,int ncols,float * kernel, int kernel_size, int myid, int numprocs, unsigned char *result){
+
+
+
+
+void convolve_1B(unsigned char * source,int nrows,int ncols,double * kernel, int kernel_size, int myid, int numprocs, unsigned char *result){
     
     //every process has  an interior, HALO LEFT HALO RIGHT
     //MASTER HAS QUL QUR HALO UP INTERIOR HALO LR
@@ -259,7 +276,7 @@ void convolve_1B(unsigned char * source,int nrows,int ncols,float * kernel, int 
     //interior convolution
 
     int k_i_start, k_i_end, k_j_start, k_j_end, img_index, res_index, k_index;
-    float tmp;
+    double tmp;
     int s = kernel_size/2;
     
     
@@ -271,13 +288,13 @@ void convolve_1B(unsigned char * source,int nrows,int ncols,float * kernel, int 
             for(int j = s; j < ncols - s; j++){
             res_index = i*ncols + j;
             result[res_index] = 0;
-            float tmp = 0.;
+            double tmp = 0.;
         //single element
         for (int k_i = 0; k_i < kernel_size; k_i ++ ){
         for (int k_j = 0; k_j < kernel_size; k_j ++ ){  
             k_index = k_i * kernel_size + k_j;
             size_t img_index = (i + (k_i - s))*ncols + (j + (k_j - s));
-            tmp += kernel[k_index]*(float)source[img_index];
+            tmp += kernel[k_index]*(double)source[img_index];
             
             
         }
@@ -389,8 +406,8 @@ void convolve_1B(unsigned char * source,int nrows,int ncols,float * kernel, int 
             for (int k_j = k_j_start; k_j < k_j_end; k_j ++ ){  
                 k_index = k_i * kernel_size + k_j;
                 img_index = (i + (k_i - s))*ncols + (j + (k_j - s));
-                float c1 = kernel[k_index];
-                float c2 = source[img_index];
+                double c1 = kernel[k_index];
+                double c2 = source[img_index];
                 tmp += c1*c2;
             }
             }
@@ -416,8 +433,8 @@ void convolve_1B(unsigned char * source,int nrows,int ncols,float * kernel, int 
             for (int k_j = k_j_start; k_j < k_j_end; k_j ++ ){ 
                 k_index = k_i * kernel_size + k_j;
                 img_index = (i + (k_i - s))*ncols + (j + (k_j - s));
-                float c1 = kernel[k_index];
-                float c2 = source[img_index];
+                double c1 = kernel[k_index];
+                double c2 = source[img_index];
                 tmp += c1*c2;
             }
             }
@@ -445,8 +462,8 @@ void convolve_1B(unsigned char * source,int nrows,int ncols,float * kernel, int 
             for (int k_j = k_j_start; k_j < k_j_end; k_j ++ ){  
                 k_index = k_i * kernel_size + k_j;
                 img_index = (i + (k_i - s))*ncols + (j + (k_j - s));
-                float c1 = kernel[k_index];
-                float c2 = source[img_index];
+                double c1 = kernel[k_index];
+                double c2 = source[img_index];
                 tmp += c1*c2;
             }
             }
@@ -512,7 +529,7 @@ void convolve_1B(unsigned char * source,int nrows,int ncols,float * kernel, int 
 }
 
 
-void convolve_2B(unsigned short * source,int nrows,int ncols,float * kernel, int kernel_size, int myid, int numprocs, unsigned short *result){
+void convolve_2B(unsigned short * source,int nrows,int ncols,double * kernel, int kernel_size, int myid, int numprocs, unsigned short *result){
     
     //every process has  an interior, HALO LEFT HALO RIGHT
     //MASTER HAS QUL QUR HALO UP INTERIOR HALO LR
@@ -522,7 +539,7 @@ void convolve_2B(unsigned short * source,int nrows,int ncols,float * kernel, int
     //interior convolution
 
     int k_i_start, k_i_end, k_j_start, k_j_end, img_index, res_index, k_index;
-    float tmp;
+    double tmp;
     int s = kernel_size/2;
     
     
@@ -534,13 +551,13 @@ void convolve_2B(unsigned short * source,int nrows,int ncols,float * kernel, int
             for(int j = s; j < ncols - s; j++){
             res_index = i*ncols + j;
             result[res_index] = 0;
-            float tmp = 0.;
+            double tmp = 0.;
         //single element
         for (int k_i = 0; k_i < kernel_size; k_i ++ ){
         for (int k_j = 0; k_j < kernel_size; k_j ++ ){  
             k_index = k_i * kernel_size + k_j;
             size_t img_index = (i + (k_i - s))*ncols + (j + (k_j - s));
-            tmp += kernel[k_index]*(float)source[img_index];
+            tmp += kernel[k_index]*(double)source[img_index];
             
             
         }
@@ -652,8 +669,8 @@ void convolve_2B(unsigned short * source,int nrows,int ncols,float * kernel, int
             for (int k_j = k_j_start; k_j < k_j_end; k_j ++ ){  
                 k_index = k_i * kernel_size + k_j;
                 img_index = (i + (k_i - s))*ncols + (j + (k_j - s));
-                float c1 = kernel[k_index];
-                float c2 = source[img_index];
+                double c1 = kernel[k_index];
+                double c2 = source[img_index];
                 tmp += c1*c2;
             }
             }
@@ -679,8 +696,8 @@ void convolve_2B(unsigned short * source,int nrows,int ncols,float * kernel, int
             for (int k_j = k_j_start; k_j < k_j_end; k_j ++ ){ 
                 k_index = k_i * kernel_size + k_j;
                 img_index = (i + (k_i - s))*ncols + (j + (k_j - s));
-                float c1 = kernel[k_index];
-                float c2 = source[img_index];
+                double c1 = kernel[k_index];
+                double c2 = source[img_index];
                 tmp += c1*c2;
             }
             }
@@ -708,8 +725,8 @@ void convolve_2B(unsigned short * source,int nrows,int ncols,float * kernel, int
             for (int k_j = k_j_start; k_j < k_j_end; k_j ++ ){  
                 k_index = k_i * kernel_size + k_j;
                 img_index = (i + (k_i - s))*ncols + (j + (k_j - s));
-                float c1 = kernel[k_index];
-                float c2 = source[img_index];
+                double c1 = kernel[k_index];
+                double c2 = source[img_index];
                 tmp += c1*c2;
             }
             }
@@ -797,7 +814,7 @@ int main(int argc, char**argv){
 
     unsigned short int kernel_type;
     unsigned int kernel_size;
-    float* kernel;
+    double* kernel;
     char* input_file, *out_file; 
 
     kernel_type = atoi(argv[1]);
@@ -808,10 +825,10 @@ int main(int argc, char**argv){
         MPI_Finalize();
         return 0;
     }
-    input_file = argv[3];
+   input_file = argv[argc - 2];
     out_file = "out.pgm";
-    if (argc > 4){out_file = argv[4];}
-    kernel = (float*)malloc(kernel_size*kernel_size*sizeof(float));
+    if (argc > 4){out_file = argv[argc - 1];}
+    kernel = (double*)malloc(kernel_size*kernel_size*sizeof(double));
     switch (kernel_type){
         case 0:
         //mean kernel
@@ -820,16 +837,25 @@ int main(int argc, char**argv){
         break;
 
         case 1:
+        {
+        double w = atof(argv[3]);
+        get_WEIGHT_kernel(kernel,kernel_size,w);
+        if (I_AM_MASTER)  printf("Selected WEIGHT kernel \n");
+        break;
+        }
+
+        case 2:
+
         //gaussian kernel
         get_GAUSSIAN_kernel(kernel,kernel_size);
         if (I_AM_MASTER)  printf("Selected GAUSSIAN kernel \n");
         break;
 
-        case 2:
+        case 3:
         //sharpen kernel
         kernel_size = 3;
         free(kernel);
-        kernel = (float*)malloc(kernel_size*kernel_size*sizeof(float));
+        kernel = (double*)malloc(kernel_size*kernel_size*sizeof(double));
         get_SHARPEN_kernel(kernel,kernel_size);
         if (I_AM_MASTER)  printf("Selected SHARPEN kernel \n ATTENTION FOR THIS KERNEL kernel_size BOUDNED TO 3 \n");
         break;
@@ -839,8 +865,9 @@ int main(int argc, char**argv){
         if(myid == 0){
         printf("Unknown kernel\nThis is the list of Implemented kernels: \n");
         printf("0 --> Mean Kernel \n");
-        printf("1 --> Gaussian Kernel \n");
-        printf("2 --> Sharpening Kernel \n");
+        printf("1 --> Weight Kernel \n");
+        printf("2 --> Gaussian Kernel \n");
+        printf("3 --> Sharpening Kernel \n");
         printf("+ others will be added developement\n");
         }
         MPI_Finalize();

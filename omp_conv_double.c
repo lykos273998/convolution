@@ -171,7 +171,7 @@ void swap_image( void *image, int xsize, int ysize, int maxval )
 }
 
 void get_MEAN_kernel(double* kernel, unsigned int kernel_size){
-    double cc = 1./(kernel_size*kernel_size);
+    double cc = 1./(double)(kernel_size*kernel_size);
     for(int i = 0; i<kernel_size; i++){
         for(int j = 0; j<kernel_size; j++){
             kernel[i*kernel_size+j] = cc;
@@ -182,6 +182,25 @@ void get_MEAN_kernel(double* kernel, unsigned int kernel_size){
 double gauss(double x, double y, double sigma){
     return exp(-(x*x + y*y)/(2*sigma*sigma))/(sigma*pow(2*M_PI,0.5));
 }
+
+
+void get_WEIGHT_kernel(double* kernel, unsigned int kernel_size, double w){
+    double other = (1.0 - w)/(kernel_size * kernel_size  - 1);
+    int s = kernel_size/2;
+    for(int i = 0; i < kernel_size; i++){
+        for(int j = 0; j < kernel_size; j++){
+            
+            kernel[i*kernel_size + j] = other;
+        }
+    }
+    kernel[s*kernel_size + s] = w;
+    
+   // printf("normalization is %f \n", cc);
+}
+
+
+
+
 
 void get_GAUSSIAN_kernel(double* kernel, unsigned int kernel_size){
     double sum = 0;
@@ -548,7 +567,7 @@ void convolve_2B(unsigned short int* source,int nrows,int ncols,double * kernel,
         for (int k_j = 0; k_j < kernel_size; k_j ++ ){  
             k_index = k_i * kernel_size + k_j;
             size_t img_index = (i + (k_i - s))*ncols + (j + (k_j - s));
-            tmp += kernel[k_index]*(double)source[img_index];
+            tmp += (double)source[img_index]*kernel[k_index];
             
             
         }
@@ -818,9 +837,9 @@ int main(int argc, char**argv){
         printf("Please insert an odd kernel size!\n");
         return 0;
     }
-    input_file = argv[3];
+    input_file = argv[argc - 2];
     out_file = "out.pgm";
-    if (argc > 4){out_file = argv[4];}
+    if (argc > 4){out_file = argv[argc - 1];}
     kernel = (double*)malloc(kernel_size*kernel_size*sizeof(double));
     switch (kernel_type){
         case 0:
@@ -830,12 +849,21 @@ int main(int argc, char**argv){
         break;
 
         case 1:
+        {
+        double w = atof(argv[3]);
+        get_WEIGHT_kernel(kernel,kernel_size,w);
+        printf("Selected WEIGHT kernel \n");
+        break;
+        }
+
+        case 2:
+
         //gaussian kernel
         get_GAUSSIAN_kernel(kernel,kernel_size);
         printf("Selected GAUSSIAN kernel \n");
         break;
 
-        case 2:
+        case 3:
         //sharpen kernel
         kernel_size = 3;
         free(kernel);
@@ -846,11 +874,15 @@ int main(int argc, char**argv){
 
 
         default:
+        
         printf("Unknown kernel\nThis is the list of Implemented kernels: \n");
         printf("0 --> Mean Kernel \n");
-        printf("1 --> Gaussian Kernel \n");
-        printf("2 --> Sharpening Kernel \n");
+        printf("1 --> Weight Kernel \n");
+        printf("2 --> Gaussian Kernel \n");
+        printf("3 --> Sharpening Kernel \n");
         printf("+ others will be added developement\n");
+        
+    
         return 0;
 
     }
