@@ -1015,6 +1015,7 @@ void exchange_halos_1B(unsigned char* my_img,int* my_img_dims, unsigned char** h
         MPI_Type_create_subarray(2, my_img_dims, halo_dims, start_point, MPI_ORDER_C, MPI_UNSIGNED_CHAR, &HALO);
         MPI_Type_commit(&HALO);
         MPI_Isend(my_img, 1, HALO, ru, tag, mpi_communicator, &request);
+        MPI_Type_free(&HALO);
         
         
     }
@@ -1037,6 +1038,7 @@ void exchange_halos_1B(unsigned char* my_img,int* my_img_dims, unsigned char** h
         MPI_Type_create_subarray(2, my_img_dims, halo_dims, start_point, MPI_ORDER_C, MPI_UNSIGNED_CHAR, &HALO);
         MPI_Type_commit(&HALO);
         MPI_Isend(my_img, 1, HALO, rd , rd, mpi_communicator, &request);
+        MPI_Type_free(&HALO);
         
         
     }
@@ -1061,6 +1063,7 @@ void exchange_halos_1B(unsigned char* my_img,int* my_img_dims, unsigned char** h
         MPI_Type_create_subarray(2, my_img_dims, halo_dims, start_point, MPI_ORDER_C, MPI_UNSIGNED_CHAR, &HALO);
         MPI_Type_commit(&HALO);
         MPI_Isend(my_img, 1, HALO, rr , rr, mpi_communicator, &request);
+        MPI_Type_free(&HALO);
         
         
     }
@@ -1085,6 +1088,7 @@ void exchange_halos_1B(unsigned char* my_img,int* my_img_dims, unsigned char** h
         MPI_Type_create_subarray(2, my_img_dims, halo_dims, start_point, MPI_ORDER_C, MPI_UNSIGNED_CHAR, &HALO);
         MPI_Type_commit(&HALO);
         MPI_Isend(my_img, 1, HALO, rl , rl, mpi_communicator, &request);
+        MPI_Type_free(&HALO);
         
         
     }
