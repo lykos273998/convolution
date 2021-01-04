@@ -1843,6 +1843,8 @@ int main(int argc, char**argv){
         free(my_img);
         free(res);
         free(final_res);
+        free(HALOS);
+        free(QQ);
         //write_pgm_image(HALOS[1], maxval, s, sub_mat_sizes[0], out_file);
         ////printf("%p %p %p %p\n", QQ[0], QQ[1], QQ[2], QQ[3]);
        
@@ -1890,6 +1892,8 @@ int main(int argc, char**argv){
             //if (grid_rank == 2) write_pgm_image(my_img, maxval, sub_mat_sizes[1] ,sub_mat_sizes[0],  "cc.pgm");
             free(my_img);
             free(res);
+            free(HALOS);
+            free(QQ);
 
           
         }
@@ -1966,6 +1970,8 @@ int main(int argc, char**argv){
         free(my_img);
         free(res);
         free(final_res);
+        free(HALOS);
+            free(QQ);
         //write_pgm_image(HALOS[1], maxval, s, sub_mat_sizes[0], out_file);
         ////printf("%p %p %p %p\n", QQ[0], QQ[1], QQ[2], QQ[3]);
        
@@ -2013,6 +2019,8 @@ int main(int argc, char**argv){
             //if (grid_rank == 2) write_pgm_image(my_img, maxval, sub_mat_sizes[1] ,sub_mat_sizes[0],  "cc.pgm");
             free(my_img);
             free(res);
+            free(HALOS);
+            free(QQ);
 
           
         }
