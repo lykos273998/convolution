@@ -1285,6 +1285,410 @@ void exchange_Q_1B(unsigned char* my_img,int* my_img_dims, unsigned char** squar
 }
 
 
+void build_image_2B(unsigned short* source, unsigned short** HALOS, unsigned short** QQ, unsigned short* out_img, int kernel_size, int* sub_mat_sizes){
+
+    int s = kernel_size/2;
+    int nrows = sub_mat_sizes[0];
+    int ncols = sub_mat_sizes[1];
+    int out_cols = ncols + 2*s;
+    int out_rows = nrows + 2*s;
+    int in_index, out_index;
+    
+    //copy qul 
+    for(int i = 0; i < s; i++){
+        for(int j = 0; j < s; j++){
+        
+        in_index = i*s + j;
+        out_index = i*out_cols + j;
+        out_img[out_index] = QQ[0][in_index];
+
+        }
+    }
+
+    //copy qur
+    for(int i = 0; i < s; i++){
+        for(int j = 0; j < s; j++){
+        
+        in_index = i*s + j;
+        out_index = i*out_cols + j + out_cols - s;
+        out_img[out_index] = QQ[1][in_index];
+
+        }
+    }
+
+    //copy qdr
+    for(int i = 0; i < s; i++){
+        for(int j = 0; j < s; j++){
+        
+        in_index = i*s + j;
+        out_index = (i + out_rows - s) *out_cols + j + out_cols - s;
+        out_img[out_index] = QQ[2][in_index];
+
+        }
+    }
+
+    //copy qdl
+    for(int i = 0; i < s; i++){
+        for(int j = 0; j < s; j++){
+        
+        in_index = i*s + j;
+        out_index = (i + out_rows - s) *out_cols + j;
+        out_img[out_index] = QQ[3][in_index];
+
+        }
+    }
+
+    //copy halo up
+    
+    for(int i = 0; i < s; i++){
+        for(int j = 0; j < ncols; j++){
+        
+        in_index = i*ncols + j;
+        out_index = i*out_cols + j + s;
+        out_img[out_index] = HALOS[0][in_index];
+
+        }
+    }
+
+    //copy halo right
+    
+    for(int i = 0; i < nrows; i++){
+        for(int j = 0; j < s; j++){
+        
+        in_index = i*s + j;
+        out_index = (i + s) *out_cols + j + out_cols - s;
+        out_img[out_index] = HALOS[1][in_index];
+
+        }
+    }
+
+
+    //copy halo down
+    
+    for(int i = 0; i < s; i++){
+        for(int j = 0; j < ncols; j++){
+        
+        in_index = i*ncols + j;
+        out_index = (i + out_rows - s)*out_cols + j + s;
+        out_img[out_index] = HALOS[2][in_index];
+
+        }
+    }
+
+    //copy halo left
+    
+    for(int i = 0; i < nrows; i++){
+        for(int j = 0; j < s; j++){
+        
+        in_index = i*s + j;
+        out_index = (i + s) *out_cols + j;
+        out_img[out_index] = HALOS[3][in_index];
+
+        }
+    }
+
+
+
+    //copy interior
+    for(int i = 0; i < nrows; i++){
+        for(int j = 0; j < ncols; j++){
+        
+        in_index = i*ncols + j;
+        out_index = (i + s)*out_cols + j + s;
+        out_img[out_index] = source[in_index];
+
+        }
+    }
+    
+
+}
+
+void cut_result_2B(unsigned short* input, unsigned short* output, int* sub_mat_sizes, int kernel_size){
+    int s = kernel_size/2;
+    int out_rows = sub_mat_sizes[0];
+    int out_cols = sub_mat_sizes[1];
+
+
+    
+    int in_rows = out_rows + 2*s;
+    int in_cols = out_cols + 2*s;
+
+    int in_index, out_index;
+
+    for(int i = 0; i< out_rows; i++){
+        for(int j = 0; j < out_cols; j++){
+            out_index = i*out_cols + j;
+            in_index = (i + s)*in_cols + (j + s);
+            output[out_index] = input[in_index];
+        }
+
+    }
+
+}
+
+
+void exchange_halos_2B(unsigned short* my_img,int* my_img_dims, unsigned short** halos, int* grid_dims, int my_rank, int* grid_coords, int kernel_size, MPI_Comm mpi_communicator){
+    unsigned short* halo_up, *halo_down, *halo_right, *halo_left;
+    int s = kernel_size/2;
+    /*
+    halo_up = halos[0];
+    halo_right = halos[1];
+    halo_down = halos[2];
+    halo_left = halos[3];
+    */
+    MPI_Datatype HALO;
+    int y = grid_coords[0];
+    int x = grid_coords[1];
+    int nrows = my_img_dims[0];
+    int ncols = my_img_dims[1];
+    int rl, rr, ru, rd;
+    MPI_Status status;
+    MPI_Request request;
+    MPI_Cart_shift(mpi_communicator, 0, 1, &ru, &rd);
+    MPI_Cart_shift(mpi_communicator, 1, 1, &rl, &rr);
+    ////printf("rank %d  nb rl %d rr %d ru %d rd %d cc %d %d \n", my_rank, rl, rr, ru, rd, grid_coords[0], grid_coords[1]);
+    //halo up-down exchange
+
+    //send halo up and recieve down
+    int tag = 117;
+    if(ru >= 0){
+        int start_point[2];
+        start_point[0] = 0;
+        start_point[1] = 0;
+        int halo_dims[2];
+        halo_dims[0] = s;
+        halo_dims[1] = ncols;
+
+        MPI_Type_create_subarray(2, my_img_dims, halo_dims, start_point, MPI_ORDER_C, MPI_UNSIGNED_SHORT, &HALO);
+        MPI_Type_commit(&HALO);
+        MPI_Isend(my_img, 1, HALO, ru, tag, mpi_communicator, &request);
+        
+        
+    }
+    if(y == grid_dims[0]-1){
+        halo_down = (unsigned short*)calloc(s*ncols, sizeof(unsigned short) );
+        }
+    else{
+        halo_down = (unsigned short*)malloc(sizeof(unsigned short)* s*ncols);
+        MPI_Recv(halo_down, s*ncols, MPI_UNSIGNED_SHORT, rd, tag, mpi_communicator, &status);  
+        }
+
+    if(rd >= 0){
+        int start_point[2];
+        start_point[0] = nrows - s;
+        start_point[1] = 0;
+        int halo_dims[2];
+        halo_dims[0] = s;
+        halo_dims[1] = ncols;
+
+        MPI_Type_create_subarray(2, my_img_dims, halo_dims, start_point, MPI_ORDER_C, MPI_UNSIGNED_SHORT, &HALO);
+        MPI_Type_commit(&HALO);
+        MPI_Isend(my_img, 1, HALO, rd , rd, mpi_communicator, &request);
+        
+        
+    }
+    if(y == 0){
+        halo_up = (unsigned short*)calloc(s*ncols, sizeof(unsigned short) );
+        }
+    else{
+        halo_up = (unsigned short*)malloc(sizeof(unsigned short)* s*ncols);
+        MPI_Recv(halo_up, s*ncols, MPI_UNSIGNED_SHORT, ru, my_rank, mpi_communicator, &status);  
+        }
+
+
+
+    if(rr >= 0 ){
+        int start_point[2];
+        start_point[0] = 0;
+        start_point[1] = ncols - s;
+        int halo_dims[2];
+        halo_dims[0] = nrows;
+        halo_dims[1] = s;
+
+        MPI_Type_create_subarray(2, my_img_dims, halo_dims, start_point, MPI_ORDER_C, MPI_UNSIGNED_SHORT, &HALO);
+        MPI_Type_commit(&HALO);
+        MPI_Isend(my_img, 1, HALO, rr , rr, mpi_communicator, &request);
+        
+        
+    }
+    if(x == 0){
+        halo_left = (unsigned short*)calloc(s*nrows, sizeof(unsigned short) );
+        }
+    else{
+        halo_left = (unsigned short*)malloc(sizeof(unsigned short)* s*nrows);
+        MPI_Recv(halo_left, s*nrows, MPI_UNSIGNED_SHORT, rl, my_rank, mpi_communicator, &status)  ;
+        }
+
+
+    
+    if(rl >= 0 ){
+        int start_point[2];
+        start_point[0] = 0;
+        start_point[1] = 0;
+        int halo_dims[2];
+        halo_dims[0] = nrows;
+        halo_dims[1] = s;
+
+        MPI_Type_create_subarray(2, my_img_dims, halo_dims, start_point, MPI_ORDER_C, MPI_UNSIGNED_SHORT, &HALO);
+        MPI_Type_commit(&HALO);
+        MPI_Isend(my_img, 1, HALO, rl , rl, mpi_communicator, &request);
+        
+        
+    }
+    if(x == grid_dims[1] - 1){
+        halo_right = (unsigned short*)calloc(s*nrows, sizeof(unsigned short) );
+        }
+    else{
+        halo_right = (unsigned short*)malloc(sizeof(unsigned short)* s*nrows);
+        MPI_Recv(halo_right, s*nrows, MPI_UNSIGNED_SHORT, rr, my_rank, mpi_communicator, &status) ; 
+        }
+
+
+    //returning the pointers
+    halos[0] = halo_up;
+    halos[1] = halo_right;
+    halos[2] = halo_down;
+    halos[3] = halo_left;
+    
+}
+
+
+void exchange_Q_2B(unsigned short* my_img,int* my_img_dims, unsigned short** squares, int* grid_dims, int my_rank, int* grid_coords, int kernel_size, MPI_Comm mpi_communicator){
+    
+    unsigned short * QUL, *QUR, *QDL, *QDR;
+
+    int y = grid_coords[0];
+    int x = grid_coords[1];
+    int nrows = my_img_dims[0];
+    int ncols = my_img_dims[1];
+    int s = kernel_size/2;
+    int tag = 123;
+    int r_ul, r_ur, r_dl, r_dr;
+    r_ul = -2;
+    r_ur = -2;
+    r_dr = -2;
+    r_dl = -2;
+
+    int up, down, left, right;
+    MPI_Status status;
+    MPI_Request request;
+    MPI_Datatype QQ;
+    
+    MPI_Cart_shift(mpi_communicator, 0, 1, &up, &down);
+    MPI_Cart_shift(mpi_communicator, 1, 1, &left, &right);
+    //calculating neighbours  -2 is the code fore being at the boundary in some way
+    if(up >= 0) {
+        if(left >= 0) {r_ul = up - 1; }
+        else if (right >=0) {r_ur = up + 1; }
+        else{}
+    }
+    if(down >= 0) {
+        if(left >= 0) {r_dl = down - 1; }
+        else if (right >=0) {r_dr = down + 1; }
+        else{}
+    }
+    ////printf("rank %d  nb r_ul %d r_ur %d r_dr %d r_dl %d cc %d %d \n", my_rank, r_ul, r_ur, r_dr, r_dl, grid_coords[0], grid_coords[1]);
+    //another time this is the foolish part
+    
+    if(r_ul >= 0){
+        int start_point[2];
+        start_point[0] = 0;
+        start_point[1] = 0;
+        int q_dims[2];
+        q_dims[0] = s;
+        q_dims[1] = s;
+
+        MPI_Type_create_subarray(2, my_img_dims, q_dims, start_point, MPI_ORDER_C, MPI_UNSIGNED_SHORT, &QQ);
+        MPI_Type_commit(&QQ);
+        MPI_Isend(my_img, 1, QQ, r_ul, tag, mpi_communicator, &request);
+        
+        
+    }
+    if(y == grid_dims[0]-1 || x == grid_dims[1] - 1){
+        QDR = (unsigned short*)calloc(s*s, sizeof(unsigned short));
+        }
+    else{
+        QDR = (unsigned short*)malloc(sizeof(unsigned short)*s*s);
+        MPI_Recv(QDR,s*s, MPI_UNSIGNED_SHORT, r_dr, tag,mpi_communicator,&status );
+    }
+
+    if(r_ur >= 0){
+        int start_point[2];
+        start_point[0] = 0;
+        start_point[1] = ncols - s;
+        int q_dims[2];
+        q_dims[0] = s;
+        q_dims[1] = s;
+
+        MPI_Type_create_subarray(2, my_img_dims, q_dims, start_point, MPI_ORDER_C, MPI_UNSIGNED_SHORT, &QQ);
+        MPI_Type_commit(&QQ);
+        MPI_Isend(my_img, 1, QQ, r_ur, tag, mpi_communicator, &request);
+        
+        
+    }
+    if(y == grid_dims[0]-1 || x == 0){
+        QDL =  (unsigned short*)calloc(s*s, sizeof(unsigned short));;
+        }
+    else{
+        QDL = (unsigned short*)malloc(sizeof(unsigned short)*s*s);
+        MPI_Recv(QDL,s*s, MPI_UNSIGNED_SHORT, r_dl, tag,mpi_communicator, &status );
+    }
+
+
+    if(r_dr >= 0){
+        int start_point[2];
+        start_point[0] = nrows - s;
+        start_point[1] = ncols - s;
+        int q_dims[2];
+        q_dims[0] = s;
+        q_dims[1] = s;
+
+        MPI_Type_create_subarray(2, my_img_dims, q_dims, start_point, MPI_ORDER_C, MPI_UNSIGNED_SHORT, &QQ);
+        MPI_Type_commit(&QQ);
+        MPI_Isend(my_img, 1, QQ, r_dr, tag, mpi_communicator, &request);
+        
+        
+    }
+    if(y == 0 || x == 0){
+        QUL =  (unsigned short*)calloc(s*s, sizeof(unsigned short));;
+        }
+    else{
+        QUL = (unsigned short*)malloc(sizeof(unsigned short)*s*s);
+        MPI_Recv(QUL,s*s, MPI_UNSIGNED_SHORT, r_ul, tag,mpi_communicator,&status );
+    }
+
+    if(r_dl >= 0){
+        int start_point[2];
+        start_point[0] = nrows - s;
+        start_point[1] = 0;
+        int q_dims[2];
+        q_dims[0] = s;
+        q_dims[1] = s;
+
+        MPI_Type_create_subarray(2, my_img_dims, q_dims, start_point, MPI_ORDER_C, MPI_UNSIGNED_SHORT, &QQ);
+        MPI_Type_commit(&QQ);
+        MPI_Isend(my_img, 1, QQ, r_dl, tag, mpi_communicator, &request);
+        
+        
+    }
+    if(y == 0 || x == grid_dims[1] - 1){
+        QUR =  (unsigned short*)calloc(s*s, sizeof(unsigned short));;
+        }
+    else{
+        QUR = (unsigned short*)malloc(sizeof(unsigned short)*s*s);
+        MPI_Recv(QUR,s*s, MPI_UNSIGNED_SHORT, r_ur, tag,mpi_communicator, &status );
+    }
+    
+    squares[0] = QUL;
+    squares[1] = QUR;
+    squares[2] = QDR;
+    squares[3] = QDL;
+
+
+
+}
+
+
 
 int main(int argc, char**argv){
     
@@ -1479,6 +1883,9 @@ int main(int argc, char**argv){
 
         if ( I_M_LITTLE_ENDIAN ) swap_image( final_res, ncols, nrows, maxval);
         write_pgm_image(final_res, maxval,ncols, nrows, out_file);
+        free(my_img);
+        free(res);
+        free(final_res);
         //write_pgm_image(HALOS[1], maxval, s, sub_mat_sizes[0], out_file);
         ////printf("%p %p %p %p\n", QQ[0], QQ[1], QQ[2], QQ[3]);
        
@@ -1524,6 +1931,8 @@ int main(int argc, char**argv){
             ////printf("%d %d %d %d \n", grid_coords[0], grid_coords[1], sub_mat_sizes[0], sub_mat_sizes[1]);
             if (grid_rank == 2) write_pgm_image(res, maxval, lc ,lr,  "cc.pgm");
             //if (grid_rank == 2) write_pgm_image(my_img, maxval, sub_mat_sizes[1] ,sub_mat_sizes[0],  "cc.pgm");
+            free(my_img);
+            free(res);
 
           
         }
@@ -1533,7 +1942,127 @@ int main(int argc, char**argv){
       
       case 2:
       {
+        
+        if(I_AM_MASTER){
+            unsigned short* bf_to_send = (unsigned short*)source;
+            unsigned short* final_res = (unsigned short*)malloc(nrows*ncols*sizeof(unsigned short));
+            for(int p = 0; p < numprocs; p++){
+            
+                int recv_coords[2];
+                MPI_Cart_coords(grid_comm, p, 2 , recv_coords);
+            
+                int sub_mat_sizes[2], start_point[2];
+                sub_matrix_dim(nrows, ncols, grid_dims, recv_coords, sub_mat_sizes, start_point);
+                MPI_Datatype chunk;
+                
+                MPI_Type_create_subarray(2, tot_dims, sub_mat_sizes, start_point, MPI_ORDER_C, MPI_UNSIGNED_SHORT, &chunk);
+                MPI_Type_commit(&chunk);
+                MPI_Isend(bf_to_send, 1, chunk, p, tag, grid_comm, &request);
+                MPI_Type_free(&chunk);
+
+
+            
+          }
+        
+        unsigned short* HALOS[4] = {NULL, NULL, NULL, NULL};
+        unsigned short* QQ[4] = {NULL, NULL, NULL, NULL};
+        int sub_mat_sizes[2], start_point[2];
+            
+            
+        sub_matrix_dim(nrows, ncols, grid_dims, grid_coords, sub_mat_sizes, start_point);
+        int len = sub_mat_sizes[0]*sub_mat_sizes[1];
+        unsigned short* my_img = (unsigned short *)malloc(len*sizeof(unsigned short*));
+        
+
+
+        MPI_Recv(my_img, len, MPI_UNSIGNED_SHORT, 0, tag, grid_comm, &status);
+        exchange_halos_2B(my_img, sub_mat_sizes, HALOS, grid_dims, grid_rank, grid_coords, kernel_size, grid_comm );
+        exchange_Q_2B(my_img, sub_mat_sizes, QQ, grid_dims, grid_rank, grid_coords, kernel_size, grid_comm);
+        int lr = (sub_mat_sizes[0]+ 2*s);
+        int lc = (sub_mat_sizes[1]+ 2*s);
+
+        unsigned short* img_to_convolve = (unsigned short*)malloc(lr*lc*sizeof(unsigned short));
+        build_image_2B(my_img, HALOS, QQ, img_to_convolve, kernel_size, sub_mat_sizes);
+        unsigned short* res =(unsigned short*) malloc(lc*lr*sizeof(unsigned short));
+        convolve_2B(img_to_convolve, lr, lc, kernel, kernel_size, res);
+        cut_result_2B(res, my_img, sub_mat_sizes, kernel_size);
+       
+        MPI_Isend(my_img, len, MPI_UNSIGNED_SHORT, 0, tag, grid_comm, &request);
+
+        for(int p = 0; p < numprocs; p++){
+            
+                int recv_coords[2];
+                MPI_Cart_coords(grid_comm, p, 2 , recv_coords);
+            
+                int sub_mat_sizes[2], start_point[2];
+                sub_matrix_dim(nrows, ncols, grid_dims, recv_coords, sub_mat_sizes, start_point);
+                MPI_Datatype chunk;
+                
+                MPI_Type_create_subarray(2, tot_dims, sub_mat_sizes, start_point, MPI_ORDER_C, MPI_UNSIGNED_SHORT, &chunk);
+                MPI_Type_commit(&chunk);
+                MPI_Recv(final_res, 1, chunk, p, tag, grid_comm, &status);
+                MPI_Type_free(&chunk);
+          }
+
+        if ( I_M_LITTLE_ENDIAN ) swap_image( final_res, ncols, nrows, maxval);
+        write_pgm_image(final_res, maxval,ncols, nrows, out_file);
+        free(my_img);
+        free(res);
+        free(final_res);
+        //write_pgm_image(HALOS[1], maxval, s, sub_mat_sizes[0], out_file);
+        ////printf("%p %p %p %p\n", QQ[0], QQ[1], QQ[2], QQ[3]);
+       
+        }
+        
+
+        else{
+            int grid_coords[2];
+            MPI_Cart_coords(grid_comm, grid_rank, 2 , grid_coords);
+            int sub_mat_sizes[2], start_point[2];
+            
+            
+            sub_matrix_dim(nrows, ncols, grid_dims, grid_coords, sub_mat_sizes, start_point);
+            int len = sub_mat_sizes[0]*sub_mat_sizes[1];
+            
+            unsigned short* my_img =(unsigned short*) malloc(len*sizeof(unsigned short));
+            
+            MPI_Recv(my_img, len, MPI_UNSIGNED_SHORT, 0, tag, grid_comm, &status);
+            unsigned short* HALOS[4];
+            HALOS[0] = NULL;
+            HALOS[1] = NULL;
+            HALOS[2] = NULL;
+            HALOS[3] = NULL;
+            exchange_halos_2B(my_img, sub_mat_sizes, HALOS, grid_dims, grid_rank, grid_coords, kernel_size, grid_comm );
+            
+            unsigned short* QQ[4] = {NULL, NULL, NULL, NULL};
+
+            exchange_Q_2B(my_img, sub_mat_sizes, QQ, grid_dims, grid_rank, grid_coords, kernel_size, grid_comm);
+            
+            int lr = (sub_mat_sizes[0]+ 2*s);
+            int lc = (sub_mat_sizes[1]+ 2*s);
+
+            unsigned short* img_to_convolve = (unsigned short*)malloc(lr*lc*sizeof(unsigned short));
+            build_image_2B(my_img, HALOS, QQ, img_to_convolve, kernel_size, sub_mat_sizes);
+            unsigned short* res =(unsigned short*) malloc(lc*lr*sizeof(unsigned short));
+            convolve_2B(img_to_convolve, lr, lc, kernel, kernel_size, res);
+            cut_result_2B(res, my_img, sub_mat_sizes, kernel_size);
+            //printf("sq %d %p %p %p %p\n",grid_rank, QQ[0], QQ[1], QQ[2], QQ[3]);
+            ////printf("halo %d %p %p %p %p\n",grid_rank, HALOS[0], HALOS[1], HALOS[2], HALOS[3]);
+          
+            MPI_Send(my_img, len, MPI_UNSIGNED_SHORT, 0, tag, grid_comm);
+
+            ////printf("%d %d %d %d \n", grid_coords[0], grid_coords[1], sub_mat_sizes[0], sub_mat_sizes[1]);
+            if (grid_rank == 2) write_pgm_image(res, maxval, lc ,lr,  "cc.pgm");
+            //if (grid_rank == 2) write_pgm_image(my_img, maxval, sub_mat_sizes[1] ,sub_mat_sizes[0],  "cc.pgm");
+            free(my_img);
+            free(res);
+
+          
+        }
+        
+        break;
       }
+      
           
     }  
     free(kernel);
