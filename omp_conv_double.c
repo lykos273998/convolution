@@ -185,17 +185,21 @@ double gauss(double x, double y, double sigma){
 
 
 void get_WEIGHT_kernel(double* kernel, unsigned int kernel_size, double w){
-    double other = (1.0 - w)/(kernel_size * kernel_size  - 1);
+    double other = (1.0 - w)/((kernel_size * kernel_size) - 1);
     int s = kernel_size/2;
+    double sum = 0;
     for(int i = 0; i < kernel_size; i++){
         for(int j = 0; j < kernel_size; j++){
             
             kernel[i*kernel_size + j] = other;
+            sum += kernel[i*kernel_size + j];
+
+
         }
     }
     kernel[s*kernel_size + s] = w;
     
-   // printf("normalization is %f \n", cc);
+    printf("normalization is %lf \n", sum - other + w);
 }
 
 
@@ -553,25 +557,27 @@ void convolve_2B(unsigned short int* source,int nrows,int ncols,double * kernel,
     //int ns = nrows/omp_get_num_threads();
     int ns = s + 1;
     int remainder = nrows - s - ((nrows - 2*s) % ns);
+    int remainder_cols = ncols - s - ((ncols - 2*s) % ns);
     //printf("remainder %d", (remainder - s)%ns);
     //printf("Processing Interior\n");
     #pragma omp for nowait
-    for(int cc = s; cc < remainder; cc+=ns){    
+    for(int cc = s; cc < remainder; cc+=ns){
+            
         for(int i = cc; i < cc+ns; i++){
             for(int j = s; j < ncols - s; j++){
             res_index = i*ncols + j;
             result[res_index] = 0;
             double tmp = 0.;
         //single element
-        for (int k_i = 0; k_i < kernel_size; k_i ++ ){
-        for (int k_j = 0; k_j < kernel_size; k_j ++ ){  
-            k_index = k_i * kernel_size + k_j;
-            size_t img_index = (i + (k_i - s))*ncols + (j + (k_j - s));
-            tmp += (double)source[img_index]*kernel[k_index];
-            
-            
-        }
-        }
+            for (int k_i = 0; k_i < kernel_size; k_i ++ ){
+            for (int k_j = 0; k_j < kernel_size; k_j ++ ){  
+                k_index = k_i * kernel_size + k_j;
+                size_t img_index = (i + (k_i - s))*ncols + (j + (k_j - s));
+                tmp += (double)source[img_index]*kernel[k_index];
+                
+                
+            }
+            }
             result[res_index] = (unsigned short)tmp;
            // printf("%f ", tmp);
 
@@ -852,7 +858,7 @@ int main(int argc, char**argv){
         {
         double w = atof(argv[3]);
         get_WEIGHT_kernel(kernel,kernel_size,w);
-        printf("Selected WEIGHT kernel \n");
+        printf("Selected WEIGHT kernel %lf \n", w);
         break;
         }
 
