@@ -1812,13 +1812,13 @@ int main(int argc, char**argv){
         unsigned char* my_img = (unsigned char *)malloc(len*sizeof(unsigned char*));
         
 
-
+        printf("rec\n");
         MPI_Recv(my_img, len, MPI_UNSIGNED_CHAR, 0, tag, grid_comm, &status);
         exchange_halos_1B(my_img, sub_mat_sizes, HALOS, grid_dims, grid_rank, grid_coords, kernel_size, grid_comm );
         exchange_Q_1B(my_img, sub_mat_sizes, QQ, grid_dims, grid_rank, grid_coords, kernel_size, grid_comm);
         int lr = (sub_mat_sizes[0]+ 2*s);
         int lc = (sub_mat_sizes[1]+ 2*s);
-
+        printf("exch\n");
         unsigned char* img_to_convolve = (unsigned char*)malloc(lr*lc*sizeof(unsigned char));
         build_image_1B(my_img, HALOS, QQ, img_to_convolve, kernel_size, sub_mat_sizes);
         unsigned char* res =(unsigned char*) malloc(lc*lr*sizeof(unsigned char));
