@@ -899,6 +899,7 @@ int main(int argc, char**argv){
     unsigned int kernel_size;
     double* kernel;
     char* input_file, *out_file; 
+    int out_len = 150;
     if(argc < 3){
         printf("usage: \n ./executable KERNEL_TYPE<0,1,..> KERNEL_SIZE INPUT_FILE \n ---PGM FILES ALLOWED ONLY--- \n");
         return 0;
@@ -909,9 +910,20 @@ int main(int argc, char**argv){
         printf("Please insert an odd kernel size!\n");
         return 0;
     }
+
+
     input_file = argv[argc - 2];
+    
+    
+    size_t str_len = strlen(input_file);
+    char* aux_str = (char*)malloc(str_len*sizeof(char));
+    
+    out_file = (char*)malloc(out_len*sizeof(char));
     out_file = "out.pgm";
+
     if (argc > 4){out_file = argv[argc - 1];}
+
+    
     kernel = (double*)malloc(kernel_size*kernel_size*sizeof(double));
     switch (kernel_type){
         case 0:
