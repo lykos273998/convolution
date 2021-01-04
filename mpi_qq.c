@@ -1821,10 +1821,12 @@ int main(int argc, char**argv){
         printf("exch\n");
         unsigned char* img_to_convolve = (unsigned char*)malloc(lr*lc*sizeof(unsigned char));
         build_image_1B(my_img, HALOS, QQ, img_to_convolve, kernel_size, sub_mat_sizes);
+        printf("build\n");
         unsigned char* res =(unsigned char*) malloc(lc*lr*sizeof(unsigned char));
         convolve_1B(img_to_convolve, lr, lc, kernel, kernel_size, res);
+        printf("conv\n");
         cut_result_1B(res, my_img, sub_mat_sizes, kernel_size);
-       
+        printf("send\n");
         MPI_Isend(my_img, len, MPI_UNSIGNED_CHAR, 0, tag, grid_comm, &request);
 
         for(int p = 0; p < numprocs; p++){
