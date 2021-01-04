@@ -1840,6 +1840,7 @@ int main(int argc, char**argv){
                 
                 MPI_Type_create_subarray(2, tot_dims, sub_mat_sizes, start_point, MPI_ORDER_C, MPI_UNSIGNED_CHAR, &chunk);
                 MPI_Type_commit(&chunk);
+                printf("rcv %d\n", p);
                 MPI_Recv(final_res, 1, chunk, p, tag, grid_comm, &status);
                 MPI_Type_free(&chunk);
           }
