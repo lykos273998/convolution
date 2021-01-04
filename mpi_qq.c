@@ -277,8 +277,7 @@ void convolve_1B(unsigned char * source,int nrows,int ncols,double * kernel, int
     
     //interior convolution
 
-    #pragma omp parallel 
-    {
+    
     int k_i_start, k_i_end, k_j_start, k_j_end, img_index, res_index, k_index;
     double tmp;
     int s = kernel_size/2;
@@ -289,9 +288,8 @@ void convolve_1B(unsigned char * source,int nrows,int ncols,double * kernel, int
     int remainder = nrows - s - ((nrows - 2*s) % ns);
     ////printf("remainder %d", (remainder - s)%ns);
     ////printf("Processing Interior\n");
-    #pragma omp for nowait
-    for(int cc = s; cc < remainder; cc+=ns){    
-        for(int i = cc; i < cc+ns; i++){
+    
+        for(int i = s ; i < nrows; i++){
             for(int j = s; j < ncols - s; j++){
             res_index = i*ncols + j;
             result[res_index] = 0;
@@ -312,29 +310,12 @@ void convolve_1B(unsigned char * source,int nrows,int ncols,double * kernel, int
 
     }  
     }
-    }
+    
     
     
     //double tmp = 0.;
     
     //remainder
-    #pragma omp for schedule(dynamic,ns) nowait
-        for(int i = remainder; i < nrows - s; i++){
-                for(int j = s; j < ncols - s; j++){
-                    res_index = i*ncols + j;
-                    result[res_index] = 0;
-                    tmp = 0.;
-                    //single element
-                    for (int k_i = 0; k_i < kernel_size; k_i ++ ){
-                    for (int k_j = 0; k_j < kernel_size; k_j ++ ){  
-                        k_index = k_i * kernel_size + k_j;
-                        img_index = (i + (k_i - s))*ncols + (j + (k_j - s));
-                        tmp+= kernel[k_index]*source[img_index];
-                    }
-                    }
-                    result[res_index] = tmp;
-    }
-    }
     
     
     //img_index, k_index, res_index;
@@ -344,7 +325,7 @@ void convolve_1B(unsigned char * source,int nrows,int ncols,double * kernel, int
     
     
     ////printf("Processing HALO UP\n");
-    #pragma omp for schedule(dynamic,ns) nowait
+   
     for(int i = 0; i <s; i++){
         for(int j = s; j < ncols - s; j++){
             res_index = i*ncols + j;
@@ -372,7 +353,7 @@ void convolve_1B(unsigned char * source,int nrows,int ncols,double * kernel, int
     
     
     ////printf("Processing HALO DOWN\n");
-    #pragma omp for schedule(dynamic,ns) nowait
+    
     for(int i = nrows - s; i < nrows; i++){
         for(int j = s; j < ncols - s; j++){
             res_index = i*ncols + j;
@@ -400,7 +381,7 @@ void convolve_1B(unsigned char * source,int nrows,int ncols,double * kernel, int
 
     //halo left
     
-    #pragma omp for schedule(dynamic,ns) nowait
+   
     ////printf("Processing HALO LEFT\n");
     for(int i = s; i < nrows - s; i++){
         for(int j = 0; j < s; j++){
@@ -428,8 +409,7 @@ void convolve_1B(unsigned char * source,int nrows,int ncols,double * kernel, int
     //halo right
     
     
-    ////printf("Processing HALO RIGHT\n");
-    #pragma omp for schedule(dynamic,ns) nowait
+    
     for(int i = s; i < nrows - s; i++){
         for(int j = ncols - s; j < ncols; j++){
             res_index = i*ncols + j;
@@ -456,8 +436,7 @@ void convolve_1B(unsigned char * source,int nrows,int ncols,double * kernel, int
     
     
     
-    ////printf("Processing Q UP LEFT\n");
-    #pragma omp for schedule(dynamic,ns) nowait
+
     for(int i = 0; i < s; i++){
         for(int j = 0; j < s; j++){
             res_index = i*ncols + j;
@@ -482,9 +461,6 @@ void convolve_1B(unsigned char * source,int nrows,int ncols,double * kernel, int
     }  
     
 
-   
-    ////printf("Processing Q UP RIGHT\n");
-    #pragma omp for schedule(dynamic,ns) nowait
     for(int i = 0; i < s; i++){
         for(int j = ncols - s; j < ncols; j++){
             res_index = i*ncols + j;
@@ -509,9 +485,7 @@ void convolve_1B(unsigned char * source,int nrows,int ncols,double * kernel, int
     }  
     
 
-    
-    ////printf("Processing Q DOWN LEFT\n");
-    #pragma omp for schedule(dynamic,ns) nowait
+
     for(int i = nrows - s; i < nrows; i++){
         for(int j = 0; j < s; j++){
             res_index = i*ncols + j;
@@ -536,10 +510,7 @@ void convolve_1B(unsigned char * source,int nrows,int ncols,double * kernel, int
     }  
     
 
-    
 
-    ////printf("Processing Q DOWN RIGHT\n");
-    #pragma omp for schedule(dynamic,ns) nowait
     for(int i = nrows - s; i < nrows; i++){
         for(int j = ncols - s; j < ncols; j++){
             res_index = i*ncols + j;
@@ -566,18 +537,18 @@ void convolve_1B(unsigned char * source,int nrows,int ncols,double * kernel, int
 
     
     
-    }
+    
     ////printf("Processing finished successfully!\n");
 }
 
-void convolve_2B(unsigned short int* source,int nrows,int ncols,double * kernel, int kernel_size, unsigned short int* result){
+
+void convolve_2B(unsigned short * source,int nrows,int ncols,double * kernel, int kernel_size, unsigned short *result){
     
     ////printf("S %d \n", s);
     
     //interior convolution
 
-    #pragma omp parallel 
-    {
+    
     int k_i_start, k_i_end, k_j_start, k_j_end, img_index, res_index, k_index;
     double tmp;
     int s = kernel_size/2;
@@ -588,9 +559,8 @@ void convolve_2B(unsigned short int* source,int nrows,int ncols,double * kernel,
     int remainder = nrows - s - ((nrows - 2*s) % ns);
     ////printf("remainder %d", (remainder - s)%ns);
     ////printf("Processing Interior\n");
-    #pragma omp for nowait
-    for(int cc = s; cc < remainder; cc+=ns){    
-        for(int i = cc; i < cc+ns; i++){
+    
+        for(int i = s ; i < nrows; i++){
             for(int j = s; j < ncols - s; j++){
             res_index = i*ncols + j;
             result[res_index] = 0;
@@ -605,35 +575,18 @@ void convolve_2B(unsigned short int* source,int nrows,int ncols,double * kernel,
             
         }
         }
-            result[res_index] = (unsigned short)tmp;
+            result[res_index] = (unsigned char)tmp;
            // //printf("%f ", tmp);
 
 
     }  
     }
-    }
+    
     
     
     //double tmp = 0.;
     
     //remainder
-    #pragma omp for schedule(dynamic,ns) nowait
-        for(int i = remainder; i < nrows - s; i++){
-                for(int j = s; j < ncols - s; j++){
-                    res_index = i*ncols + j;
-                    result[res_index] = 0;
-                    tmp = 0.;
-                    //single element
-                    for (int k_i = 0; k_i < kernel_size; k_i ++ ){
-                    for (int k_j = 0; k_j < kernel_size; k_j ++ ){  
-                        k_index = k_i * kernel_size + k_j;
-                        img_index = (i + (k_i - s))*ncols + (j + (k_j - s));
-                        tmp+= kernel[k_index]*source[img_index];
-                    }
-                    }
-                    result[res_index] = tmp;
-    }
-    }
     
     
     //img_index, k_index, res_index;
@@ -643,7 +596,7 @@ void convolve_2B(unsigned short int* source,int nrows,int ncols,double * kernel,
     
     
     ////printf("Processing HALO UP\n");
-    #pragma omp for schedule(dynamic,ns) nowait
+   
     for(int i = 0; i <s; i++){
         for(int j = s; j < ncols - s; j++){
             res_index = i*ncols + j;
@@ -663,6 +616,7 @@ void convolve_2B(unsigned short int* source,int nrows,int ncols,double * kernel,
             }
             }
             result[res_index] = tmp;
+
         }
     }
     //halo down
@@ -670,7 +624,7 @@ void convolve_2B(unsigned short int* source,int nrows,int ncols,double * kernel,
     
     
     ////printf("Processing HALO DOWN\n");
-    #pragma omp for schedule(dynamic,ns) nowait
+    
     for(int i = nrows - s; i < nrows; i++){
         for(int j = s; j < ncols - s; j++){
             res_index = i*ncols + j;
@@ -685,17 +639,20 @@ void convolve_2B(unsigned short int* source,int nrows,int ncols,double * kernel,
             for (int k_i = k_i_start; k_i < k_i_end; k_i ++ ){
             for (int k_j = k_j_start; k_j < k_j_end; k_j ++ ){  
                 k_index = k_i * kernel_size + k_j;
-                size_t img_index = (i + (k_i - s))*ncols + (j + (k_j - s));
+                img_index = (i + (k_i - s))*ncols + (j + (k_j - s));
+                
                 tmp += kernel[k_index]*(double)source[img_index];
             }
             }
             result[res_index] = tmp;
+
         }
     }  
     
+
     //halo left
     
-    #pragma omp for schedule(dynamic,ns) nowait
+   
     ////printf("Processing HALO LEFT\n");
     for(int i = s; i < nrows - s; i++){
         for(int j = 0; j < s; j++){
@@ -716,14 +673,14 @@ void convolve_2B(unsigned short int* source,int nrows,int ncols,double * kernel,
             }
             }
             result[res_index] = tmp;
+
         }
     }  
     
     //halo right
     
     
-    ////printf("Processing HALO RIGHT\n");
-    #pragma omp for schedule(dynamic,ns) nowait
+    
     for(int i = s; i < nrows - s; i++){
         for(int j = ncols - s; j < ncols; j++){
             res_index = i*ncols + j;
@@ -743,14 +700,14 @@ void convolve_2B(unsigned short int* source,int nrows,int ncols,double * kernel,
             }
             }
             result[res_index] = tmp;
+
         }
     }  
     
     
     
     
-    ////printf("Processing Q UP LEFT\n");
-    #pragma omp for schedule(dynamic,ns) nowait
+
     for(int i = 0; i < s; i++){
         for(int j = 0; j < s; j++){
             res_index = i*ncols + j;
@@ -770,12 +727,11 @@ void convolve_2B(unsigned short int* source,int nrows,int ncols,double * kernel,
             }
             }
             result[res_index] = tmp;
+
         }
     }  
     
-   
-    ////printf("Processing Q UP RIGHT\n");
-    #pragma omp for schedule(dynamic,ns) nowait
+
     for(int i = 0; i < s; i++){
         for(int j = ncols - s; j < ncols; j++){
             res_index = i*ncols + j;
@@ -795,12 +751,12 @@ void convolve_2B(unsigned short int* source,int nrows,int ncols,double * kernel,
             }
             }
             result[res_index] = tmp;
+
         }
     }  
     
-    
-    ////printf("Processing Q DOWN LEFT\n");
-    #pragma omp for schedule(dynamic,ns) nowait
+
+
     for(int i = nrows - s; i < nrows; i++){
         for(int j = 0; j < s; j++){
             res_index = i*ncols + j;
@@ -815,17 +771,17 @@ void convolve_2B(unsigned short int* source,int nrows,int ncols,double * kernel,
             for (int k_i = k_i_start; k_i < k_i_end; k_i ++ ){
             for (int k_j = k_j_start; k_j < k_j_end; k_j ++ ){ 
                 k_index = k_i * kernel_size + k_j;
-                size_t img_index = (i + (k_i - s))*ncols + (j + (k_j - s));
+                img_index = (i + (k_i - s))*ncols + (j + (k_j - s));
                 tmp += kernel[k_index]*(double)source[img_index];
             }
             }
             result[res_index] = tmp;
+
         }
     }  
     
-    
-    ////printf("Processing Q DOWN RIGHT\n");
-    #pragma omp for schedule(dynamic,ns) nowait
+
+
     for(int i = nrows - s; i < nrows; i++){
         for(int j = ncols - s; j < ncols; j++){
             res_index = i*ncols + j;
@@ -841,18 +797,19 @@ void convolve_2B(unsigned short int* source,int nrows,int ncols,double * kernel,
             for (int k_j = k_j_start; k_j < k_j_end; k_j ++ ){  
                 k_index = k_i * kernel_size + k_j;
                 img_index = (i + (k_i - s))*ncols + (j + (k_j - s));
-                double c1 = kernel[k_index];
-                double c2 = source[img_index];
-                tmp += c1*c2;
+                tmp += kernel[k_index]*(double)source[img_index];
             }
             }
             result[res_index] = tmp;
+
         }
     }  
     
+
     
-    }
-    //printf("Processing finished successfully!\n");
+    
+    
+    ////printf("Processing finished successfully!\n");
 }
 
 
