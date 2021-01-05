@@ -1728,7 +1728,7 @@ int main(int argc, char**argv){
         w = atof(argv[3]);
         input_file = argv[4];
         cut_name(input_file, on);
-        sprintf(of,format, on, kernel_type, kernel_size,kernel_size, w);
+        sprintf(of,format, on, kernel_type, kernel_size,kernel_size,10*w);
         
 
         if(argc>5){sprintf(of,"%s",argv[5]);}
@@ -1742,7 +1742,10 @@ int main(int argc, char**argv){
         
         if(argc > 4){sprintf(of,"%s",argv[4]);}
     }
+
     char* out_file = of;
+
+    if (I_AM_MASTER) printf("%s\n", out_file);
 
     kernel = (double*)malloc(kernel_size*kernel_size*sizeof(double));
     switch (kernel_type){
