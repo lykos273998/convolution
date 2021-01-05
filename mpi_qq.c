@@ -314,19 +314,18 @@ void convolve_1B(unsigned char * source,int nrows,int ncols,double * kernel, int
     
     ////printf("Processing Interior\n");
     //int ns = nrows/omp_get_num_threads();
-    int ns = s + 1;
-    int remainder = nrows - s - ((nrows - 2*s) % ns);
+   
     ////printf("remainder %d", (remainder - s)%ns);
     ////printf("Processing Interior\n");
     
-        for(int i = s ; i < nrows; i++){
+        for(int i = s ; i < nrows - s; i++){
             for(int j = s; j < ncols - s; j++){
             res_index = i*ncols + j;
             result[res_index] = 0;
             double tmp = 0.;
         //single element
-        for (int k_i = 0; k_i < kernel_size; k_i ++ ){
-        for (int k_j = 0; k_j < kernel_size; k_j ++ ){  
+            for (int k_i = 0; k_i < kernel_size; k_i ++ ){
+            for (int k_j = 0; k_j < kernel_size; k_j ++ ){  
             k_index = k_i * kernel_size + k_j;
             size_t img_index = (i + (k_i - s))*ncols + (j + (k_j - s));
             tmp += (double)source[img_index]*kernel[k_index];
@@ -341,7 +340,7 @@ void convolve_1B(unsigned char * source,int nrows,int ncols,double * kernel, int
     }  
     }
     
-    
+    /*
     
     //double tmp = 0.;
     
@@ -567,7 +566,7 @@ void convolve_1B(unsigned char * source,int nrows,int ncols,double * kernel, int
 
     
     
-    
+    */
     ////printf("Processing finished successfully!\n");
 }
 
@@ -585,12 +584,11 @@ void convolve_2B(unsigned short * source,int nrows,int ncols,double * kernel, in
     
     ////printf("Processing Interior\n");
     //int ns = nrows/omp_get_num_threads();
-    int ns = s + 1;
-    int remainder = nrows - s - ((nrows - 2*s) % ns);
+ 
     ////printf("remainder %d", (remainder - s)%ns);
     ////printf("Processing Interior\n");
     
-        for(int i = s ; i < nrows; i++){
+        for(int i = s ; i < nrows - s; i++){
             for(int j = s; j < ncols - s; j++){
             res_index = i*ncols + j;
             result[res_index] = 0;
@@ -611,7 +609,7 @@ void convolve_2B(unsigned short * source,int nrows,int ncols,double * kernel, in
 
     }  
     }
-    
+    /*
     
     
     //double tmp = 0.;
@@ -835,7 +833,7 @@ void convolve_2B(unsigned short * source,int nrows,int ncols,double * kernel, in
         }
     }  
     
-
+*/
     
     
     
@@ -1894,12 +1892,14 @@ int main(int argc, char**argv){
         printf("conv\n");
         cut_result_1B(res, my_img, sub_mat_sizes, kernel_size);
         printf("send\n");
+        
         //MPI_Isend(my_img, len, MPI_UNSIGNED_CHAR, 0, 0, grid_comm, &request);
         for(int i = 0; i < sub_mat_sizes[0]; i++ ){
             for(int j = 0; j < sub_mat_sizes[1]; j++){
                  final_res[i*ncols + j] = my_img[i*sub_mat_sizes[1] + j];
             }
         }
+        
         for(int p = 1; p < numprocs; p++){
             
                 int recv_coords[2];
@@ -1916,14 +1916,15 @@ int main(int argc, char**argv){
                // printf("rcv %d\n", p);
                 MPI_Type_free(&chunk);
           }
+          
 
         if ( I_M_LITTLE_ENDIAN ) swap_image( final_res, ncols, nrows, maxval);
         write_pgm_image(final_res, maxval, ncols, nrows, out_file);
-        free(my_img);
-        free(res);
-        free(final_res);
-        free(HALOS[0]); free(HALOS[1]); free(HALOS[2]); free(HALOS[3]);
-            free(QQ[0]); free(QQ[1]); free(QQ[2]); free(QQ[3]);
+       // free(my_img);
+       // free(res);
+       // free(final_res);
+       // free(HALOS[0]); free(HALOS[1]); free(HALOS[2]); free(HALOS[3]);
+       //     free(QQ[0]); free(QQ[1]); free(QQ[2]); free(QQ[3]);
         //write_pgm_image(HALOS[1], maxval, s, sub_mat_sizes[0], out_file);
         ////printf("%p %p %p %p\n", QQ[0], QQ[1], QQ[2], QQ[3]);
         
@@ -2065,11 +2066,11 @@ int main(int argc, char**argv){
         if ( I_M_LITTLE_ENDIAN ) swap_image( final_res, ncols, nrows, maxval);
         printf("write\n");
         write_pgm_image(final_res, maxval, ncols, nrows, out_file);
-        free(my_img);
-        free(res);
-        free(final_res);
-        free(HALOS[0]); free(HALOS[1]); free(HALOS[2]); free(HALOS[3]);
-            free(QQ[0]); free(QQ[1]); free(QQ[2]); free(QQ[3]);
+        //free(my_img);
+        //free(res);
+        //free(final_res);
+        //free(HALOS[0]); free(HALOS[1]); free(HALOS[2]); free(HALOS[3]);
+          //  free(QQ[0]); free(QQ[1]); free(QQ[2]); free(QQ[3]);
         //write_pgm_image(HALOS[1], maxval, s, sub_mat_sizes[0], out_file);
         ////printf("%p %p %p %p\n", QQ[0], QQ[1], QQ[2], QQ[3]);
         
@@ -2133,11 +2134,10 @@ int main(int argc, char**argv){
       
           
     }  
-    free(kernel);
+    //free(kernel);
     //free(source);
     MPI_Finalize();
     return 0;
     
 }
-
 
