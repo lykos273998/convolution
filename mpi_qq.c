@@ -239,7 +239,7 @@ void get_GAUSSIAN_kernel(double* kernel, unsigned int kernel_size){
 }
 
 void get_WEIGHT_kernel(double* kernel, unsigned int kernel_size, double w){
-    double other = (1.0 - w)/(kernel_size * kernel_size  - 1);
+    double other = (1.0 - w)/(kernel_size * kernel_size );
     int s = kernel_size/2;
     for(int i = 0; i < kernel_size; i++){
         for(int j = 0; j < kernel_size; j++){
