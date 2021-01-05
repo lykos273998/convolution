@@ -923,13 +923,13 @@ int main(int argc, char**argv){
     if(kernel_type == 1){
         w = atof(argv[3]);
         input_file = argv[4];
-      sprintf(of,"tt%s",argv[4]);
+      
         if(argc>4){sprintf(of,"%s",argv[5]);}
     }
     else
     {
         input_file = argv[3];
-        sprintf(of,"tt%s",argv[3]);
+        
         if(argc > 3){sprintf(of,"%s",argv[4]);}
     }
     
