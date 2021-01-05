@@ -24,6 +24,36 @@
 #define I_AM_MASTER myid==0
 
 
+void cut_name(char* source, char* dest){
+    int slash, pgm;
+    int len = strlen(source);
+    pgm = len - 1;
+    slash = len - 1;
+
+
+    while(source[pgm] != '.'){
+        
+        pgm = pgm - 1;
+        //printf("%c ", source[pgm]);
+    }
+
+    while(source[slash] != '/'){
+        //printf("%c ", source[slash]);
+        slash = slash - 1;
+    }
+    slash++;
+
+    for(int i = slash; i < pgm; i++){
+        dest[i - slash] = source[i];
+    }
+    
+
+    dest[pgm - slash] = '\0';
+
+
+
+}
+
 
 // =============================================================
 //  utilities for managinf pgm files
@@ -1675,7 +1705,7 @@ int main(int argc, char**argv){
     unsigned short int kernel_type;
     unsigned int kernel_size;
     double* kernel;
-    char* input_file, *out_file; 
+    char* input_file; 
 
     kernel_type = atoi(argv[1]);
     kernel_size = atoi(argv[2]);
@@ -1685,9 +1715,35 @@ int main(int argc, char**argv){
         MPI_Finalize();
         return 0;
     }
-    input_file = argv[argc - 2];
-    out_file = "out.pgm";
-    if (argc > 4){out_file = argv[argc - 1];}
+     double w = 0.;
+    int out_len = 20;
+    char * format;
+    char of[120];
+    char on[120];
+    
+    
+    if(kernel_type == 1){
+        //free(format);
+        format = "%s.b_%d_%dx%d_0%1.0lf.pgm";
+
+        input_file = argv[4];
+        cut_name(input_file, on);
+        sprintf(of,format, on, kernel_type, kernel_size,kernel_size, w);
+        
+
+        if(argc>5){sprintf(of,"%s",argv[5]);}
+    }
+    else
+    {
+        format = "%s.b_%d_%dx%d.pgm";
+        input_file = argv[3];
+        cut_name(input_file, on);
+        sprintf(of,format, on, kernel_type, kernel_size,kernel_size);
+        
+        if(argc > 4){sprintf(of,"%s",argv[4]);}
+    }
+    char* out_file = of;
+
     kernel = (double*)malloc(kernel_size*kernel_size*sizeof(double));
     switch (kernel_type){
         case 0:

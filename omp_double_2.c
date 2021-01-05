@@ -896,16 +896,43 @@ void convolve_2B(unsigned short * source,int nrows,int ncols,double * kernel, in
 }
 
 
+void cut_name(char* source, char* dest){
+    int slash, pgm;
+    int len = strlen(source);
+    pgm = len - 1;
+    slash = len - 1;
+
+
+    while(source[pgm] != '.'){
+        
+        pgm = pgm - 1;
+        //printf("%c ", source[pgm]);
+    }
+
+    while(source[slash] != '/'){
+        //printf("%c ", source[slash]);
+        slash = slash - 1;
+    }
+    slash++;
+
+    for(int i = slash; i < pgm; i++){
+        dest[i - slash] = source[i];
+    }
+    
+
+    dest[pgm - slash] = '\0';
+
+
+
+}
+
+
 int main(int argc, char**argv){
     unsigned short int kernel_type;
     unsigned int kernel_size;
     double* kernel;
     char* input_file;
     
-    int out_len = 20;
-    
-    char of[120];
-
     if(argc < 3){
         printf("usage: \n ./executable KERNEL_TYPE<0,1,..> KERNEL_SIZE INPUT_FILE \n ---PGM FILES ALLOWED ONLY--- \n");
         return 0;
@@ -916,25 +943,36 @@ int main(int argc, char**argv){
         printf("Please insert an odd kernel size!\n");
         return 0;
     }
-    double w = 0;
+   
     
-    //output file name = original_file_name.b_#TYPE_#XSIZEx#YSIZE<_#CENTRALVALUE>.pgm
-    printf("argc %d\n", argc);
+    double w = 0.;
+    int out_len = 20;
+    char * format;
+    char of[120];
+    char on[120];
+    
+    
     if(kernel_type == 1){
-        w = atof(argv[3]);
+        //free(format);
+        format = "%s.b_%d_%dx%d_0%1.0lf.pgm";
+
         input_file = argv[4];
-      
-        if(argc>4){sprintf(of,"%s",argv[5]);}
+        cut_name(input_file, on);
+        sprintf(of,format, on, kernel_type, kernel_size,kernel_size, w);
+        
+
+        if(argc>5){sprintf(of,"%s",argv[5]);}
     }
     else
     {
+        format = "%s.b_%d_%dx%d.pgm";
         input_file = argv[3];
+        cut_name(input_file, on);
+        sprintf(of,format, on, kernel_type, kernel_size,kernel_size);
         
-        if(argc > 3){sprintf(of,"%s",argv[4]);}
+        if(argc > 4){sprintf(of,"%s",argv[4]);}
     }
-    
-    printf("if %s\n", input_file);
-   // printf("of %s\n", ppp);
+    char* out_file = of;
     
     
     
