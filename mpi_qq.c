@@ -1748,7 +1748,7 @@ int main(int argc, char**argv){
     char* ff[2] = {f1, f2};
     int k = (kernel_type == 1);
     sprintf(of,ff[k], on, kernel_type, kernel_size,kernel_size, 10*w);
-    printf("%s\n",of);
+    if (I_AM_MASTER) printf("%s\n",of);
 
     out_file = of;
 
