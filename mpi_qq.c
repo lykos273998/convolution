@@ -1652,34 +1652,6 @@ void exchange_Q_2B(unsigned short* my_img,int* my_img_dims, unsigned short** squ
 }
 
 
-void cut_name(char* source, char* dest){
-    int slash, pgm;
-    int len = strlen(source);
-    pgm = len - 1;
-    slash = len - 1;
-    while(source[pgm] != '.'){
-        
-        pgm = pgm - 1;
-        //printf("%c ", source[pgm]);
-    }
-
-    while(source[slash] != '/'){
-        //printf("%c ", source[slash]);
-        slash = slash - 1;
-    }
-    slash++;
-
-    for(int i = slash; i < pgm; i++){
-        dest[i - slash] = source[i];
-    }
-    
-
-    dest[pgm - slash] = '\0';
-
-
-
-}
-
 
 int main(int argc, char**argv){
     
@@ -1713,45 +1685,9 @@ int main(int argc, char**argv){
         MPI_Finalize();
         return 0;
     }
-    int out_len = 20;
-    char * format;
-    char of[120];
-    char on[120];
-
-
-    kernel_type = atoi(argv[1]);
-    kernel_size = atoi(argv[2]);
-    if(kernel_size%2 == 0){
-        printf("Please insert an odd kernel size!\n");
-        return 0;
-    }
-    double w = 0.;
-    
-    
-    if(kernel_type == 1){
-        //free(format);
-        w = atof(argv[3]);
-        input_file = argv[4];
-        
-        if(argc>4){sprintf(of,"%s",argv[5]);}
-    }
-
-    if(kernel_type != 1)
-    {
-        input_file = argv[3];
-        if(argc > 3){sprintf(of,"%s",argv[4]);}
-    }
-    //of[1] = 'i';
-    char* f1 = "%s.b_%d_%dx%d.pgm";
-    char*  f2 = "%s.b_%d_%dx%d_0%1.0lf.pgm";
-    cut_name(input_file, on);
-    char* ff[2] = {f1, f2};
-    int k = (kernel_type == 1);
-    sprintf(of,ff[k], on, kernel_type, kernel_size,kernel_size, 10*w);
-    if (I_AM_MASTER) printf("%s\n",of);
-
-    out_file = of;
-
+    input_file = argv[argc - 2];
+    out_file = "out.pgm";
+    if (argc > 4){out_file = argv[argc - 1];}
     kernel = (double*)malloc(kernel_size*kernel_size*sizeof(double));
     switch (kernel_type){
         case 0:

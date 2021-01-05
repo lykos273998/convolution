@@ -896,35 +896,6 @@ void convolve_2B(unsigned short * source,int nrows,int ncols,double * kernel, in
 }
 
 
-void cut_name(char* source, char* dest){
-    int slash, pgm;
-    int len = strlen(source);
-    pgm = len - 1;
-    slash = len - 1;
-    while(source[pgm] != '.'){
-        
-        pgm = pgm - 1;
-        //printf("%c ", source[pgm]);
-    }
-
-    while(source[slash] != '/'){
-        //printf("%c ", source[slash]);
-        slash = slash - 1;
-    }
-    slash++;
-
-    for(int i = slash; i < pgm; i++){
-        dest[i - slash] = source[i];
-    }
-    
-
-    dest[pgm - slash] = '\0';
-
-
-
-}
-
-
 int main(int argc, char**argv){
     unsigned short int kernel_type;
     unsigned int kernel_size;
@@ -932,47 +903,38 @@ int main(int argc, char**argv){
     char* input_file;
     
     int out_len = 20;
-    char * format, *out_file;
+    
     char of[120];
-    char on[120];
 
     if(argc < 3){
         printf("usage: \n ./executable KERNEL_TYPE<0,1,..> KERNEL_SIZE INPUT_FILE \n ---PGM FILES ALLOWED ONLY--- \n");
         return 0;
     }
-
     kernel_type = atoi(argv[1]);
     kernel_size = atoi(argv[2]);
     if(kernel_size%2 == 0){
         printf("Please insert an odd kernel size!\n");
         return 0;
     }
-    double w = 0.;
+    double w = 0;
     
-    
+    //output file name = original_file_name.b_#TYPE_#XSIZEx#YSIZE<_#CENTRALVALUE>.pgm
+    printf("argc %d\n", argc);
     if(kernel_type == 1){
-        //free(format);
         w = atof(argv[3]);
         input_file = argv[4];
-        
+      sprintf(of,"tt%s",argv[4]);
         if(argc>4){sprintf(of,"%s",argv[5]);}
     }
-
-    if(kernel_type != 1)
+    else
     {
         input_file = argv[3];
+        sprintf(of,"tt%s",argv[3]);
         if(argc > 3){sprintf(of,"%s",argv[4]);}
     }
     
-    char* f1 = "%s.b_%d_%dx%d.pgm";
-    char*  f2 = "%s.b_%d_%dx%d_0%1.0lf.pgm";
-    cut_name(input_file, on);
-    char* ff[2] = {f1, f2};
-    int k = (kernel_type == 1);
-    sprintf(of,ff[k], on, kernel_type, kernel_size,kernel_size, 10*w);
-    printf("%s\n",of);
-
-    out_file = of;
+    printf("if %s\n", input_file);
+   // printf("of %s\n", ppp);
     
     
     
