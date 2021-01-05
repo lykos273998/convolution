@@ -568,6 +568,7 @@ void convolve_1B(unsigned char * source,int nrows,int ncols,double * kernel, int
     printf("Processing finished successfully!\n");
 }
 
+
 void convolve_2B(unsigned short * source,int nrows,int ncols,double * kernel, int kernel_size, unsigned short *result){
     
     //printf("S %d \n", s);
@@ -605,7 +606,7 @@ void convolve_2B(unsigned short * source,int nrows,int ncols,double * kernel, in
             
         }
         }
-            result[res_index] = (unsigned char)tmp;
+            result[res_index] = tmp;
            // printf("%f ", tmp);
 
 
@@ -628,7 +629,7 @@ void convolve_2B(unsigned short * source,int nrows,int ncols,double * kernel, in
             
         }
         }
-            result[res_index] = (unsigned char)tmp;
+            result[res_index] = tmp;
            // printf("%f ", tmp);
 
 
@@ -994,7 +995,7 @@ int main(int argc, char**argv){
 
     case 2:
         {
-        unsigned short int* result = (unsigned short int*)malloc(nrows*ncols*sizeof(unsigned short int));
+        unsigned short* result = (unsigned short*)malloc(nrows*ncols*sizeof(unsigned short));
         convolve_2B((unsigned short int* )source,nrows,ncols,kernel,kernel_size,result);
         if ( I_M_LITTLE_ENDIAN ) swap_image( result, ncols, nrows, maxval); 
         write_pgm_image(result, maxval, ncols, nrows, out_file);

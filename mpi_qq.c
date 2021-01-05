@@ -575,7 +575,7 @@ void convolve_2B(unsigned short * source,int nrows,int ncols,double * kernel, in
             
         }
         }
-            result[res_index] = (unsigned char)tmp;
+            result[res_index] = tmp;
            // //printf("%f ", tmp);
 
 
@@ -1855,7 +1855,7 @@ int main(int argc, char**argv){
           }
 
         if ( I_M_LITTLE_ENDIAN ) swap_image( final_res, ncols, nrows, maxval);
-        write_pgm_image(final_res, maxval,ncols, nrows, out_file);
+        write_pgm_image(final_res, maxval, ncols, nrows, out_file);
         free(my_img);
         free(res);
         free(final_res);
@@ -1923,12 +1923,12 @@ int main(int argc, char**argv){
       }
       
       case 2:
-      {
+     {
         
         if(I_AM_MASTER){
             unsigned short* bf_to_send = (unsigned short*)source;
             unsigned short* final_res = (unsigned short*)malloc(nrows*ncols*sizeof(unsigned short));
-            for(int p = 0; p < numprocs; p++){
+            for(int p = 1; p < numprocs; p++){
             
                 int recv_coords[2];
                 MPI_Cart_coords(grid_comm, p, 2 , recv_coords);
@@ -1939,7 +1939,8 @@ int main(int argc, char**argv){
                 
                 MPI_Type_create_subarray(2, tot_dims, sub_mat_sizes, start_point, MPI_ORDER_C, MPI_UNSIGNED_SHORT, &chunk);
                 MPI_Type_commit(&chunk);
-                MPI_Isend(bf_to_send, 1, chunk, p, tag, grid_comm, &request);
+                //printf("sending to %d dims %d %d sp %d %d \n",p, sub_mat_sizes[0], sub_mat_sizes[1], start_point[0], start_point[1]);
+                MPI_Send(bf_to_send, 1, chunk, p, p, grid_comm);
                 MPI_Type_free(&chunk);
 
 
@@ -1955,21 +1956,27 @@ int main(int argc, char**argv){
         int len = sub_mat_sizes[0]*sub_mat_sizes[1];
         unsigned short* my_img = (unsigned short *)malloc(len*sizeof(unsigned short*));
         
-
-
-        MPI_Recv(my_img, len, MPI_UNSIGNED_SHORT, 0, tag, grid_comm, &status);
+        for(int i = 0; i < sub_mat_sizes[0]; i++ ){
+            for(int j = 0; j < sub_mat_sizes[1]; j++){
+                my_img[i*sub_mat_sizes[1] + j] = bf_to_send[i*ncols + j];
+            }
+        }
+        
+        //MPI_Recv(my_img, len, MPI_UNSIGNED_CHAR, 0, 0, grid_comm, &status);
         exchange_halos_2B(my_img, sub_mat_sizes, HALOS, grid_dims, grid_rank, grid_coords, kernel_size, grid_comm );
         exchange_Q_2B(my_img, sub_mat_sizes, QQ, grid_dims, grid_rank, grid_coords, kernel_size, grid_comm);
         int lr = (sub_mat_sizes[0]+ 2*s);
         int lc = (sub_mat_sizes[1]+ 2*s);
-
+        printf("exch\n");
         unsigned short* img_to_convolve = (unsigned short*)malloc(lr*lc*sizeof(unsigned short));
         build_image_2B(my_img, HALOS, QQ, img_to_convolve, kernel_size, sub_mat_sizes);
+        printf("build\n");
         unsigned short* res =(unsigned short*) malloc(lc*lr*sizeof(unsigned short));
         convolve_2B(img_to_convolve, lr, lc, kernel, kernel_size, res);
+        printf("conv\n");
         cut_result_2B(res, my_img, sub_mat_sizes, kernel_size);
-       
-        MPI_Isend(my_img, len, MPI_UNSIGNED_SHORT, 0, tag, grid_comm, &request);
+        printf("send\n");
+        MPI_Isend(my_img, len, MPI_UNSIGNED_SHORT, 0, 0, grid_comm, &request);
 
         for(int p = 0; p < numprocs; p++){
             
@@ -1982,19 +1989,22 @@ int main(int argc, char**argv){
                 
                 MPI_Type_create_subarray(2, tot_dims, sub_mat_sizes, start_point, MPI_ORDER_C, MPI_UNSIGNED_SHORT, &chunk);
                 MPI_Type_commit(&chunk);
-                MPI_Recv(final_res, 1, chunk, p, tag, grid_comm, &status);
+               // printf("rcv %d\n", p);
+                MPI_Recv(final_res, 1, chunk, p, p, grid_comm, &status);
+               // printf("rcv %d\n", p);
                 MPI_Type_free(&chunk);
           }
 
         if ( I_M_LITTLE_ENDIAN ) swap_image( final_res, ncols, nrows, maxval);
-        write_pgm_image(final_res, maxval,ncols, nrows, out_file);
+        write_pgm_image(final_res, maxval, ncols, nrows, out_file);
         free(my_img);
         free(res);
         free(final_res);
         free(HALOS[0]); free(HALOS[1]); free(HALOS[2]); free(HALOS[3]);
-        free(QQ[0]); free(QQ[1]); free(QQ[2]); free(QQ[3]);
+            free(QQ[0]); free(QQ[1]); free(QQ[2]); free(QQ[3]);
         //write_pgm_image(HALOS[1], maxval, s, sub_mat_sizes[0], out_file);
         ////printf("%p %p %p %p\n", QQ[0], QQ[1], QQ[2], QQ[3]);
+        
        
         }
         
@@ -2009,40 +2019,44 @@ int main(int argc, char**argv){
             int len = sub_mat_sizes[0]*sub_mat_sizes[1];
             
             unsigned short* my_img =(unsigned short*) malloc(len*sizeof(unsigned short));
+            //if (grid_rank == 2) printf("rccc1 %d\n", grid_rank);
+            MPI_Recv(my_img, len, MPI_UNSIGNED_SHORT, 0, grid_rank, grid_comm, &status);
             
-            MPI_Recv(my_img, len, MPI_UNSIGNED_SHORT, 0, tag, grid_comm, &status);
+           // if (grid_rank == 2) printf("rccc2 %d\n", grid_rank);
             unsigned short* HALOS[4];
             HALOS[0] = NULL;
             HALOS[1] = NULL;
             HALOS[2] = NULL;
             HALOS[3] = NULL;
             exchange_halos_2B(my_img, sub_mat_sizes, HALOS, grid_dims, grid_rank, grid_coords, kernel_size, grid_comm );
-            
+
             unsigned short* QQ[4] = {NULL, NULL, NULL, NULL};
 
             exchange_Q_2B(my_img, sub_mat_sizes, QQ, grid_dims, grid_rank, grid_coords, kernel_size, grid_comm);
-            
+   
             int lr = (sub_mat_sizes[0]+ 2*s);
             int lc = (sub_mat_sizes[1]+ 2*s);
 
             unsigned short* img_to_convolve = (unsigned short*)malloc(lr*lc*sizeof(unsigned short));
             build_image_2B(my_img, HALOS, QQ, img_to_convolve, kernel_size, sub_mat_sizes);
+         
             unsigned short* res =(unsigned short*) malloc(lc*lr*sizeof(unsigned short));
             convolve_2B(img_to_convolve, lr, lc, kernel, kernel_size, res);
+           
             cut_result_2B(res, my_img, sub_mat_sizes, kernel_size);
             //printf("sq %d %p %p %p %p\n",grid_rank, QQ[0], QQ[1], QQ[2], QQ[3]);
             ////printf("halo %d %p %p %p %p\n",grid_rank, HALOS[0], HALOS[1], HALOS[2], HALOS[3]);
           
-            MPI_Send(my_img, len, MPI_UNSIGNED_SHORT, 0, tag, grid_comm);
+            MPI_Send(my_img, len, MPI_UNSIGNED_SHORT, 0, grid_rank, grid_comm);
 
             ////printf("%d %d %d %d \n", grid_coords[0], grid_coords[1], sub_mat_sizes[0], sub_mat_sizes[1]);
-            if (grid_rank == 2) write_pgm_image(res, maxval, lc ,lr,  "cc.pgm");
+            
             //if (grid_rank == 2) write_pgm_image(my_img, maxval, sub_mat_sizes[1] ,sub_mat_sizes[0],  "cc.pgm");
-            free(my_img);
-            free(res);
-            free(HALOS[0]); free(HALOS[1]); free(HALOS[2]); free(HALOS[3]);
-            free(QQ[0]); free(QQ[1]); free(QQ[2]); free(QQ[3]);
-
+            //free(my_img);
+            //free(res);
+            //free(HALOS[0]); free(HALOS[1]); free(HALOS[2]); free(HALOS[3]);
+            //free(QQ[0]); free(QQ[1]); free(QQ[2]); free(QQ[3]);
+            
           
         }
         
