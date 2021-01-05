@@ -1652,6 +1652,34 @@ void exchange_Q_2B(unsigned short* my_img,int* my_img_dims, unsigned short** squ
 }
 
 
+void cut_name(char* source, char* dest){
+    int slash, pgm;
+    int len = strlen(source);
+    pgm = len - 1;
+    slash = len - 1;
+    while(source[pgm] != '.'){
+        
+        pgm = pgm - 1;
+        //printf("%c ", source[pgm]);
+    }
+
+    while(source[slash] != '/'){
+        //printf("%c ", source[slash]);
+        slash = slash - 1;
+    }
+    slash++;
+
+    for(int i = slash; i < pgm; i++){
+        dest[i - slash] = source[i];
+    }
+    
+
+    dest[pgm - slash] = '\0';
+
+
+
+}
+
 
 int main(int argc, char**argv){
     
@@ -1685,9 +1713,45 @@ int main(int argc, char**argv){
         MPI_Finalize();
         return 0;
     }
-    input_file = argv[argc - 2];
-    out_file = "out.pgm";
-    if (argc > 4){out_file = argv[argc - 1];}
+    int out_len = 20;
+    char * format;
+    char of[120];
+    char on[120];
+
+
+    kernel_type = atoi(argv[1]);
+    kernel_size = atoi(argv[2]);
+    if(kernel_size%2 == 0){
+        printf("Please insert an odd kernel size!\n");
+        return 0;
+    }
+    double w = 0.;
+    
+    
+    if(kernel_type == 1){
+        //free(format);
+        w = atof(argv[3]);
+        input_file = argv[4];
+        
+        if(argc>4){sprintf(of,"%s",argv[5]);}
+    }
+
+    if(kernel_type != 1)
+    {
+        input_file = argv[3];
+        if(argc > 3){sprintf(of,"%s",argv[4]);}
+    }
+    //of[1] = 'i';
+    char* f1 = "%s.b_%d_%dx%d.pgm";
+    char*  f2 = "%s.b_%d_%dx%d_0%1.0lf.pgm";
+    cut_name(input_file, on);
+    char* ff[2] = {f1, f2};
+    int k = (kernel_type == 1);
+    sprintf(of,ff[k], on, kernel_type, kernel_size,kernel_size, 10*w);
+    printf("%s\n",of);
+
+    out_file = of;
+
     kernel = (double*)malloc(kernel_size*kernel_size*sizeof(double));
     switch (kernel_type){
         case 0:
@@ -1835,9 +1899,13 @@ int main(int argc, char**argv){
         printf("conv\n");
         cut_result_1B(res, my_img, sub_mat_sizes, kernel_size);
         printf("send\n");
-        MPI_Isend(my_img, len, MPI_UNSIGNED_CHAR, 0, 0, grid_comm, &request);
-
-        for(int p = 0; p < numprocs; p++){
+        //MPI_Isend(my_img, len, MPI_UNSIGNED_CHAR, 0, 0, grid_comm, &request);
+        for(int i = 0; i < sub_mat_sizes[0]; i++ ){
+            for(int j = 0; j < sub_mat_sizes[1]; j++){
+                 final_res[i*ncols + j] = my_img[i*sub_mat_sizes[1] + j];
+            }
+        }
+        for(int p = 1; p < numprocs; p++){
             
                 int recv_coords[2];
                 MPI_Cart_coords(grid_comm, p, 2 , recv_coords);
@@ -1976,9 +2044,13 @@ int main(int argc, char**argv){
         printf("conv\n");
         cut_result_2B(res, my_img, sub_mat_sizes, kernel_size);
         printf("send\n");
-        MPI_Isend(my_img, len, MPI_UNSIGNED_SHORT, 0, 0, grid_comm, &request);
-
-        for(int p = 0; p < numprocs; p++){
+        //MPI_Isend(my_img, len, MPI_UNSIGNED_SHORT, 0, 0, grid_comm, &request);
+        for(int i = 0; i < sub_mat_sizes[0]; i++ ){
+            for(int j = 0; j < sub_mat_sizes[1]; j++){
+                 final_res[i*ncols + j] = my_img[i*sub_mat_sizes[1] + j];
+            }
+        }
+        for(int p = 1; p < numprocs; p++){
             
                 int recv_coords[2];
                 MPI_Cart_coords(grid_comm, p, 2 , recv_coords);
@@ -1989,13 +2061,14 @@ int main(int argc, char**argv){
                 
                 MPI_Type_create_subarray(2, tot_dims, sub_mat_sizes, start_point, MPI_ORDER_C, MPI_UNSIGNED_SHORT, &chunk);
                 MPI_Type_commit(&chunk);
-               // printf("rcv %d\n", p);
+                printf("rcv %d\n", p);
                 MPI_Recv(final_res, 1, chunk, p, p, grid_comm, &status);
                // printf("rcv %d\n", p);
                 MPI_Type_free(&chunk);
           }
 
         if ( I_M_LITTLE_ENDIAN ) swap_image( final_res, ncols, nrows, maxval);
+        printf("write\n");
         write_pgm_image(final_res, maxval, ncols, nrows, out_file);
         free(my_img);
         free(res);

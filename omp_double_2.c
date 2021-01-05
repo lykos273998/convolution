@@ -895,35 +895,86 @@ void convolve_2B(unsigned short * source,int nrows,int ncols,double * kernel, in
     printf("Processing finished successfully!\n");
 }
 
+
+void cut_name(char* source, char* dest){
+    int slash, pgm;
+    int len = strlen(source);
+    pgm = len - 1;
+    slash = len - 1;
+    while(source[pgm] != '.'){
+        
+        pgm = pgm - 1;
+        //printf("%c ", source[pgm]);
+    }
+
+    while(source[slash] != '/'){
+        //printf("%c ", source[slash]);
+        slash = slash - 1;
+    }
+    slash++;
+
+    for(int i = slash; i < pgm; i++){
+        dest[i - slash] = source[i];
+    }
+    
+
+    dest[pgm - slash] = '\0';
+
+
+
+}
+
+
 int main(int argc, char**argv){
     unsigned short int kernel_type;
     unsigned int kernel_size;
     double* kernel;
-    char* input_file, *out_file; 
-    int out_len = 150;
+    char* input_file;
+    
+    int out_len = 20;
+    char * format, *out_file;
+    char of[120];
+    char on[120];
+
     if(argc < 3){
         printf("usage: \n ./executable KERNEL_TYPE<0,1,..> KERNEL_SIZE INPUT_FILE \n ---PGM FILES ALLOWED ONLY--- \n");
         return 0;
     }
+
     kernel_type = atoi(argv[1]);
     kernel_size = atoi(argv[2]);
     if(kernel_size%2 == 0){
         printf("Please insert an odd kernel size!\n");
         return 0;
     }
-
-
-    input_file = argv[argc - 2];
+    double w = 0.;
     
     
-    size_t str_len = strlen(input_file);
-    char* aux_str = (char*)malloc(str_len*sizeof(char));
+    if(kernel_type == 1){
+        //free(format);
+        w = atof(argv[3]);
+        input_file = argv[4];
+        
+        if(argc>4){sprintf(of,"%s",argv[5]);}
+    }
+
+    if(kernel_type != 1)
+    {
+        input_file = argv[3];
+        if(argc > 3){sprintf(of,"%s",argv[4]);}
+    }
     
-    out_file = (char*)malloc(out_len*sizeof(char));
-    out_file = "out.pgm";
+    char* f1 = "%s.b_%d_%dx%d.pgm";
+    char*  f2 = "%s.b_%d_%dx%d_0%1.0lf.pgm";
+    cut_name(input_file, on);
+    char* ff[2] = {f1, f2};
+    int k = (kernel_type == 1);
+    sprintf(of,ff[k], on, kernel_type, kernel_size,kernel_size, 10*w);
+    printf("%s\n",of);
 
-    if (argc > 4){out_file = argv[argc - 1];}
-
+    out_file = of;
+    
+    
     
     kernel = (double*)malloc(kernel_size*kernel_size*sizeof(double));
     switch (kernel_type){
@@ -935,7 +986,7 @@ int main(int argc, char**argv){
 
         case 1:
         {
-        double w = atof(argv[3]);
+        
         get_WEIGHT_kernel(kernel,kernel_size,w);
         printf("Selected WEIGHT kernel %lf \n", w);
         break;
@@ -988,7 +1039,7 @@ int main(int argc, char**argv){
         unsigned char* result = (unsigned char*)malloc(nrows*ncols*sizeof(unsigned char));
         convolve_1B((unsigned char* )source,nrows,ncols,kernel,kernel_size,result);
         if ( I_M_LITTLE_ENDIAN ) swap_image( result, ncols, nrows, maxval); 
-        write_pgm_image(result, maxval, ncols, nrows, out_file);
+        write_pgm_image(result, maxval, ncols, nrows, of);
         free(result);
         break;
         }
@@ -998,7 +1049,7 @@ int main(int argc, char**argv){
         unsigned short* result = (unsigned short*)malloc(nrows*ncols*sizeof(unsigned short));
         convolve_2B((unsigned short int* )source,nrows,ncols,kernel,kernel_size,result);
         if ( I_M_LITTLE_ENDIAN ) swap_image( result, ncols, nrows, maxval); 
-        write_pgm_image(result, maxval, ncols, nrows, out_file);
+        write_pgm_image(result, maxval, ncols, nrows, of);
         free(result);
         break;
         }
