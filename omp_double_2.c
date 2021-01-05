@@ -955,7 +955,7 @@ int main(int argc, char**argv){
     if(kernel_type == 1){
         //free(format);
         format = "%s.b_%d_%dx%d_0%1.0lf.pgm";
-
+        w = atof(argv[3]);
         input_file = argv[4];
         cut_name(input_file, on);
         sprintf(of,format, on, kernel_type, kernel_size,kernel_size, w);
