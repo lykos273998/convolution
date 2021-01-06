@@ -1023,6 +1023,7 @@ void exchange_halos_1B(unsigned char* my_img,int* my_img_dims, unsigned char** h
     int nrows = my_img_dims[0];
     int ncols = my_img_dims[1];
     int rl, rr, ru, rd;
+    int send = 0;
     MPI_Status status;
     MPI_Request request;
     MPI_Cart_shift(mpi_communicator, 0, 1, &ru, &rd);
@@ -1033,6 +1034,7 @@ void exchange_halos_1B(unsigned char* my_img,int* my_img_dims, unsigned char** h
     //send halo up and recieve down
     int tag = 117;
     if(ru >= 0){
+        send = 1;
         int start_point[2];
         start_point[0] = 0;
         start_point[1] = 0;
@@ -1055,7 +1057,13 @@ void exchange_halos_1B(unsigned char* my_img,int* my_img_dims, unsigned char** h
         MPI_Recv(halo_down, s*ncols, MPI_UNSIGNED_CHAR, rd, tag, mpi_communicator, &status);  
         }
 
+    if(send == 1){
+        send = 0;
+        MPI_Wait(&request, &status);
+    }
+
     if(rd >= 0){
+        send = 1;
         int start_point[2];
         start_point[0] = nrows - s;
         start_point[1] = 0;
@@ -1078,9 +1086,15 @@ void exchange_halos_1B(unsigned char* my_img,int* my_img_dims, unsigned char** h
         MPI_Recv(halo_up, s*ncols, MPI_UNSIGNED_CHAR, ru, my_rank, mpi_communicator, &status);  
         }
 
+    if(send == 1){
+        send = 0;
+        MPI_Wait(&request, &status);
+    }
+
 
 
     if(rr >= 0 ){
+        send = 1;
         int start_point[2];
         start_point[0] = 0;
         start_point[1] = ncols - s;
@@ -1102,10 +1116,16 @@ void exchange_halos_1B(unsigned char* my_img,int* my_img_dims, unsigned char** h
         halo_left = (unsigned char*)malloc(sizeof(unsigned char)* s*nrows);
         MPI_Recv(halo_left, s*nrows, MPI_UNSIGNED_CHAR, rl, my_rank, mpi_communicator, &status)  ;
         }
+    
+    if(send == 1){
+        send = 0;
+        MPI_Wait(&request, &status);
+    }
 
 
     
     if(rl >= 0 ){
+        send = 1;
         int start_point[2];
         start_point[0] = 0;
         start_point[1] = 0;
@@ -1127,6 +1147,11 @@ void exchange_halos_1B(unsigned char* my_img,int* my_img_dims, unsigned char** h
         halo_right = (unsigned char*)malloc(sizeof(unsigned char)* s*nrows);
         MPI_Recv(halo_right, s*nrows, MPI_UNSIGNED_CHAR, rr, my_rank, mpi_communicator, &status) ; 
         }
+    
+    if(send == 1){
+        send = 0;
+        MPI_Wait(&request, &status);
+    }
 
 
     //returning the pointers
@@ -1141,7 +1166,7 @@ void exchange_halos_1B(unsigned char* my_img,int* my_img_dims, unsigned char** h
 void exchange_Q_1B(unsigned char* my_img,int* my_img_dims, unsigned char** squares, int* grid_dims, int my_rank, int* grid_coords, int kernel_size, MPI_Comm mpi_communicator){
     
     unsigned char * QUL, *QUR, *QDL, *QDR;
-
+    int send = 0;
     int y = grid_coords[0];
     int x = grid_coords[1];
     int nrows = my_img_dims[0];
@@ -1177,6 +1202,7 @@ void exchange_Q_1B(unsigned char* my_img,int* my_img_dims, unsigned char** squar
     //another time this is the foolish part
     
     if(r_ul >= 0){
+        send = 1;
         int start_point[2];
         start_point[0] = 0;
         start_point[1] = 0;
@@ -1197,8 +1223,13 @@ void exchange_Q_1B(unsigned char* my_img,int* my_img_dims, unsigned char** squar
         QDR = (unsigned char*)malloc(sizeof(unsigned char)*s*s);
         MPI_Recv(QDR,s*s, MPI_UNSIGNED_CHAR, r_dr, tag,mpi_communicator,&status );
     }
+    if(send == 1){
+        send = 0;
+        MPI_Wait(&request, &status);
+    }
 
     if(r_ur >= 0){
+        send = 1;
         int start_point[2];
         start_point[0] = 0;
         start_point[1] = ncols - s;
@@ -1220,8 +1251,14 @@ void exchange_Q_1B(unsigned char* my_img,int* my_img_dims, unsigned char** squar
         MPI_Recv(QDL,s*s, MPI_UNSIGNED_CHAR, r_dl, tag,mpi_communicator, &status );
     }
 
+    if(send == 1){
+        send = 0;
+        MPI_Wait(&request, &status);
+    }
+
 
     if(r_dr >= 0){
+        send = 1;
         int start_point[2];
         start_point[0] = nrows - s;
         start_point[1] = ncols - s;
@@ -1242,8 +1279,13 @@ void exchange_Q_1B(unsigned char* my_img,int* my_img_dims, unsigned char** squar
         QUL = (unsigned char*)malloc(sizeof(unsigned char)*s*s);
         MPI_Recv(QUL,s*s, MPI_UNSIGNED_CHAR, r_ul, tag,mpi_communicator,&status );
     }
+    if(send == 1){
+        send = 0;
+        MPI_Wait(&request, &status);
+    }
 
     if(r_dl >= 0){
+        send = 1;
         int start_point[2];
         start_point[0] = nrows - s;
         start_point[1] = 0;
@@ -1263,6 +1305,10 @@ void exchange_Q_1B(unsigned char* my_img,int* my_img_dims, unsigned char** squar
     else{
         QUR = (unsigned char*)malloc(sizeof(unsigned char)*s*s);
         MPI_Recv(QUR,s*s, MPI_UNSIGNED_CHAR, r_ur, tag,mpi_communicator, &status );
+    }
+    if(send == 1){
+        send = 0;
+        MPI_Wait(&request, &status);
     }
     
     squares[0] = QUL;
@@ -1585,6 +1631,7 @@ void exchange_Q_2B(unsigned short* my_img,int* my_img_dims, unsigned short** squ
     MPI_Status status;
     MPI_Request request;
     MPI_Datatype QQ;
+    int send = 0;
     
     MPI_Cart_shift(mpi_communicator, 0, 1, &up, &down);
     MPI_Cart_shift(mpi_communicator, 1, 1, &left, &right);
@@ -1604,6 +1651,7 @@ void exchange_Q_2B(unsigned short* my_img,int* my_img_dims, unsigned short** squ
     //another time this is the foolish part
     
     if(r_ul >= 0){
+        send = 1;
         int start_point[2];
         start_point[0] = 0;
         start_point[1] = 0;
@@ -1625,7 +1673,13 @@ void exchange_Q_2B(unsigned short* my_img,int* my_img_dims, unsigned short** squ
         MPI_Recv(QDR,s*s, MPI_UNSIGNED_SHORT, r_dr, tag,mpi_communicator,&status );
     }
 
+    if(send == 1){
+        send = 0;
+        MPI_Wait(&request, &status);
+    }
+
     if(r_ur >= 0){
+        send = 1;
         int start_point[2];
         start_point[0] = 0;
         start_point[1] = ncols - s;
@@ -1647,8 +1701,14 @@ void exchange_Q_2B(unsigned short* my_img,int* my_img_dims, unsigned short** squ
         MPI_Recv(QDL,s*s, MPI_UNSIGNED_SHORT, r_dl, tag,mpi_communicator, &status );
     }
 
+    if(send == 1){
+        send = 0;
+        MPI_Wait(&request, &status);
+    }
+
 
     if(r_dr >= 0){
+        send = 1;
         int start_point[2];
         start_point[0] = nrows - s;
         start_point[1] = ncols - s;
@@ -1670,7 +1730,13 @@ void exchange_Q_2B(unsigned short* my_img,int* my_img_dims, unsigned short** squ
         MPI_Recv(QUL,s*s, MPI_UNSIGNED_SHORT, r_ul, tag,mpi_communicator,&status );
     }
 
+    if(send == 1){
+        send = 0;
+        MPI_Wait(&request, &status);
+    }
+
     if(r_dl >= 0){
+        send = 1;
         int start_point[2];
         start_point[0] = nrows - s;
         start_point[1] = 0;
@@ -1690,6 +1756,11 @@ void exchange_Q_2B(unsigned short* my_img,int* my_img_dims, unsigned short** squ
     else{
         QUR = (unsigned short*)malloc(sizeof(unsigned short)*s*s);
         MPI_Recv(QUR,s*s, MPI_UNSIGNED_SHORT, r_ur, tag,mpi_communicator, &status );
+    }
+
+    if(send == 1){
+        send = 0;
+        MPI_Wait(&request, &status);
     }
     
     squares[0] = QUL;
