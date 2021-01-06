@@ -590,15 +590,15 @@ void convolve_2B(unsigned short * source,int nrows,int ncols,double * kernel, in
     
         for(int i = s ; i < nrows - s; i++){
             for(int j = s; j < ncols - s; j++){
-            res_index = i*ncols + j;
-            result[res_index] = 0;
-            double tmp = 0.;
+                res_index = i*ncols + j;
+                result[res_index] = 0;
+                double tmp = 0.;
         //single element
-        for (int k_i = 0; k_i < kernel_size; k_i ++ ){
-        for (int k_j = 0; k_j < kernel_size; k_j ++ ){  
-            k_index = k_i * kernel_size + k_j;
-            size_t img_index = (i + (k_i - s))*ncols + (j + (k_j - s));
-            tmp += (double)source[img_index]*kernel[k_index];
+            for (int k_i = 0; k_i < kernel_size; k_i ++ ){
+            for (int k_j = 0; k_j < kernel_size; k_j ++ ){  
+                k_index = k_i * kernel_size + k_j;
+                size_t img_index = (i + (k_i - s))*ncols + (j + (k_j - s));
+                tmp += (double)source[img_index]*kernel[k_index];
             
             
         }
@@ -1462,6 +1462,8 @@ void exchange_halos_2B(unsigned short* my_img,int* my_img_dims, unsigned short**
         halo_down = (unsigned short*)malloc(sizeof(unsigned short)* s*ncols);
         MPI_Recv(halo_down, s*ncols, MPI_UNSIGNED_SHORT, rd, tag, mpi_communicator, &status);  
         }
+    
+    MPI_Wait(&request, &status);
 
     if(rd >= 0){
         int start_point[2];
@@ -1485,7 +1487,7 @@ void exchange_halos_2B(unsigned short* my_img,int* my_img_dims, unsigned short**
         MPI_Recv(halo_up, s*ncols, MPI_UNSIGNED_SHORT, ru, my_rank, mpi_communicator, &status);  
         }
 
-
+    MPI_Wait(&request, &status);
 
     if(rr >= 0 ){
         int start_point[2];
@@ -1509,7 +1511,7 @@ void exchange_halos_2B(unsigned short* my_img,int* my_img_dims, unsigned short**
         MPI_Recv(halo_left, s*nrows, MPI_UNSIGNED_SHORT, rl, my_rank, mpi_communicator, &status)  ;
         }
 
-
+    MPI_Wait(&request, &status);
     
     if(rl >= 0 ){
         int start_point[2];
@@ -1533,7 +1535,7 @@ void exchange_halos_2B(unsigned short* my_img,int* my_img_dims, unsigned short**
         MPI_Recv(halo_right, s*nrows, MPI_UNSIGNED_SHORT, rr, my_rank, mpi_communicator, &status) ; 
         }
 
-
+    MPI_Wait(&request, &status);
     //returning the pointers
     halos[0] = halo_up;
     halos[1] = halo_right;
@@ -2037,6 +2039,7 @@ int main(int argc, char**argv){
         printf("build\n");
         unsigned short* res =(unsigned short*) malloc(lc*lr*sizeof(unsigned short));
         convolve_2B(img_to_convolve, lr, lc, kernel, kernel_size, res);
+        //res = img_to_convolve;
         printf("conv\n");
         cut_result_2B(res, my_img, sub_mat_sizes, kernel_size);
         printf("send\n");
@@ -2111,8 +2114,10 @@ int main(int argc, char**argv){
          
             unsigned short* res =(unsigned short*) malloc(lc*lr*sizeof(unsigned short));
             convolve_2B(img_to_convolve, lr, lc, kernel, kernel_size, res);
-           
+            //res = img_to_convolve;
             cut_result_2B(res, my_img, sub_mat_sizes, kernel_size);
+            if ( I_M_LITTLE_ENDIAN ) swap_image( res, lc, lr, maxval);
+             if (grid_rank == 2) write_pgm_image(res, maxval, lc, lr, "ff.pgm");
             //printf("sq %d %p %p %p %p\n",grid_rank, QQ[0], QQ[1], QQ[2], QQ[3]);
             ////printf("halo %d %p %p %p %p\n",grid_rank, HALOS[0], HALOS[1], HALOS[2], HALOS[3]);
           
