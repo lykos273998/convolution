@@ -1436,12 +1436,14 @@ void exchange_halos_2B(unsigned short* my_img,int* my_img_dims, unsigned short**
     MPI_Request request;
     MPI_Cart_shift(mpi_communicator, 0, 1, &ru, &rd);
     MPI_Cart_shift(mpi_communicator, 1, 1, &rl, &rr);
+    int send = 0;
     ////printf("rank %d  nb rl %d rr %d ru %d rd %d cc %d %d \n", my_rank, rl, rr, ru, rd, grid_coords[0], grid_coords[1]);
     //halo up-down exchange
 
     //send halo up and recieve down
     int tag = 117;
     if(ru >= 0){
+        send = 1;
         int start_point[2];
         start_point[0] = 0;
         start_point[1] = 0;
@@ -1462,10 +1464,16 @@ void exchange_halos_2B(unsigned short* my_img,int* my_img_dims, unsigned short**
         halo_down = (unsigned short*)malloc(sizeof(unsigned short)* s*ncols);
         MPI_Recv(halo_down, s*ncols, MPI_UNSIGNED_SHORT, rd, tag, mpi_communicator, &status);  
         }
+
+    if(send = 1){
+        send = 0;
+        MPI_Wait(&request, &status);
+    }
     
     
 
     if(rd >= 0){
+        send = 1;
         int start_point[2];
         start_point[0] = nrows - s;
         start_point[1] = 0;
@@ -1476,6 +1484,7 @@ void exchange_halos_2B(unsigned short* my_img,int* my_img_dims, unsigned short**
         MPI_Type_create_subarray(2, my_img_dims, halo_dims, start_point, MPI_ORDER_C, MPI_UNSIGNED_SHORT, &HALO);
         MPI_Type_commit(&HALO);
         MPI_Isend(my_img, 1, HALO, rd , rd, mpi_communicator, &request);
+
         
         
     }
@@ -1487,9 +1496,15 @@ void exchange_halos_2B(unsigned short* my_img,int* my_img_dims, unsigned short**
         MPI_Recv(halo_up, s*ncols, MPI_UNSIGNED_SHORT, ru, my_rank, mpi_communicator, &status);  
         }
 
+    if(send = 1){
+        send = 0;
+        MPI_Wait(&request, &status);
+    }
+    
     
 
     if(rr >= 0 ){
+        send = 1;
         int start_point[2];
         start_point[0] = 0;
         start_point[1] = ncols - s;
@@ -1511,8 +1526,13 @@ void exchange_halos_2B(unsigned short* my_img,int* my_img_dims, unsigned short**
         MPI_Recv(halo_left, s*nrows, MPI_UNSIGNED_SHORT, rl, my_rank, mpi_communicator, &status)  ;
         }
 
+    if(send = 1){
+        send = 0;
+        MPI_Wait(&request, &status);
+    }
     
     if(rl >= 0 ){
+        send = 1;
         int start_point[2];
         start_point[0] = 0;
         start_point[1] = 0;
@@ -1533,8 +1553,12 @@ void exchange_halos_2B(unsigned short* my_img,int* my_img_dims, unsigned short**
         halo_right = (unsigned short*)malloc(sizeof(unsigned short)* s*nrows);
         MPI_Recv(halo_right, s*nrows, MPI_UNSIGNED_SHORT, rr, my_rank, mpi_communicator, &status) ; 
         }
-
-    MPI_Wait(&request, &status);
+    
+    if(send = 1){
+        send = 0;
+        MPI_Wait(&request, &status);
+    }
+    
     //returning the pointers
     halos[0] = halo_up;
     halos[1] = halo_right;
