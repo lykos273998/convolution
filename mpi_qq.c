@@ -1465,7 +1465,10 @@ void exchange_halos_2B(unsigned short* my_img,int* my_img_dims, unsigned short**
         MPI_Recv(halo_down, s*ncols, MPI_UNSIGNED_SHORT, rd, tag, mpi_communicator, &status);  
         }
 
-   
+   if(send = 1){
+        send = 0;
+        MPI_Wait(&request, &status);
+    }
 
     if(rd >= 0){
         send = 1;
@@ -1491,6 +1494,10 @@ void exchange_halos_2B(unsigned short* my_img,int* my_img_dims, unsigned short**
         MPI_Recv(halo_up, s*ncols, MPI_UNSIGNED_SHORT, ru, my_rank, mpi_communicator, &status);  
         }
 
+    if(send = 1){
+        send = 0;
+        MPI_Wait(&request, &status);
+    }
     
 
     if(rr >= 0 ){
