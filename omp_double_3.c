@@ -203,9 +203,6 @@ void get_WEIGHT_kernel(double* kernel, unsigned int kernel_size, double w){
 }
 
 
-
-
-
 void get_GAUSSIAN_kernel(double* kernel, unsigned int kernel_size){
     double sum = 0;
     for(int i = 0; i < kernel_size; i++){
@@ -257,14 +254,15 @@ void convolve_1B(unsigned char * source,int nrows,int ncols,double * kernel, int
     //printf("Processing Interior\n");
     //int ns = nrows/omp_get_num_threads();
     int ns = s;
-    int remainder = nrows - s - ((nrows - 2*s) % ns);
+    int nrs = nrows/omp_get_num_threads();
+    int remainder = nrows - s - ((nrows - 2*s) % nrs);
     int remainder_cols = ncols - s - ((ncols - 2*s) % ns);
     //printf("remainder %d", (remainder - s)%ns);
     //printf("Processing Interior\n");
     #pragma omp for nowait
-    for(int cc = s; cc < remainder; cc+=ns){   
+    for(int cc = s; cc < remainder; cc+=nrs){   
         for(int dd = s; dd < remainder_cols; dd+=ns){
-            for(int i = cc; i < cc+ns; i++){
+            for(int i = cc; i < cc+nrs; i++){
             for(int j = dd; j < dd+ns; j++){
                 res_index = i*ncols + j;
                 result[res_index] = 0;
@@ -287,7 +285,7 @@ void convolve_1B(unsigned char * source,int nrows,int ncols,double * kernel, int
     }
     }
     
-        for(int i = cc; i < cc+ns; i++){
+        for(int i = cc; i < cc+nrs; i++){
             for(int j = remainder_cols; j < ncols - s; j++){
                 res_index = i*ncols + j;
                 result[res_index] = 0;
@@ -584,14 +582,15 @@ void convolve_2B(unsigned short * source,int nrows,int ncols,double * kernel, in
     //printf("Processing Interior\n");
     //int ns = nrows/omp_get_num_threads();
     int ns = s;
-    int remainder = nrows - s - ((nrows - 2*s) % ns);
+    int nrs = nrows/omp_get_num_threads();
+    int remainder = nrows - s - ((nrows - 2*s) % nrs);
     int remainder_cols = ncols - s - ((ncols - 2*s) % ns);
     //printf("remainder %d", (remainder - s)%ns);
     //printf("Processing Interior\n");
     #pragma omp for nowait
-    for(int cc = s; cc < remainder; cc+=ns){   
+    for(int cc = s; cc < remainder; cc+=nrs){   
         for(int dd = s; dd < remainder_cols; dd+=ns){
-            for(int i = cc; i < cc+ns; i++){
+            for(int i = cc; i < cc+nrs; i++){
             for(int j = dd; j < dd+ns; j++){
                 res_index = i*ncols + j;
                 result[res_index] = 0;
@@ -614,7 +613,7 @@ void convolve_2B(unsigned short * source,int nrows,int ncols,double * kernel, in
     }
     }
     
-        for(int i = cc; i < cc+ns; i++){
+        for(int i = cc; i < cc+nrs; i++){
             for(int j = remainder_cols; j < ncols - s; j++){
                 res_index = i*ncols + j;
                 result[res_index] = 0;
