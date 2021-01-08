@@ -239,7 +239,7 @@ void get_GAUSSIAN_kernel(double* kernel, unsigned int kernel_size){
 }
 
 void get_WEIGHT_kernel(double* kernel, unsigned int kernel_size, double w){
-    double other = (1.0 - w)/(kernel_size * kernel_size );
+    double other = (1.0 - w)/(kernel_size * kernel_size - 1);
     int s = kernel_size/2;
     for(int i = 0; i < kernel_size; i++){
         for(int j = 0; j < kernel_size; j++){
@@ -1963,7 +1963,7 @@ int main(int argc, char**argv){
             
         sub_matrix_dim(nrows, ncols, grid_dims, grid_coords, sub_mat_sizes, start_point);
         int len = sub_mat_sizes[0]*sub_mat_sizes[1];
-        unsigned char* my_img = (unsigned char *)malloc(len*sizeof(unsigned char*));
+        unsigned char* my_img = (unsigned char *)malloc(len*sizeof(unsigned char));
         
         for(int i = 0; i < sub_mat_sizes[0]; i++ ){
             for(int j = 0; j < sub_mat_sizes[1]; j++){
@@ -2111,7 +2111,7 @@ int main(int argc, char**argv){
             
         sub_matrix_dim(nrows, ncols, grid_dims, grid_coords, sub_mat_sizes, start_point);
         int len = sub_mat_sizes[0]*sub_mat_sizes[1];
-        unsigned short* my_img = (unsigned short *)malloc(len*sizeof(unsigned short*));
+        unsigned short* my_img = (unsigned short *)malloc(len*sizeof(unsigned short));
         
         for(int i = 0; i < sub_mat_sizes[0]; i++ ){
             for(int j = 0; j < sub_mat_sizes[1]; j++){
