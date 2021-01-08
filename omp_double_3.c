@@ -185,7 +185,7 @@ double gauss(double x, double y, double sigma){
 
 
 void get_WEIGHT_kernel(double* kernel, unsigned int kernel_size, double w){
-    double other = (1.0 - w)/((kernel_size * kernel_size) );
+    double other = (1.0 - w)/((kernel_size * kernel_size) - 1);
     int s = kernel_size/2;
     double sum = 0;
     for(int i = 0; i < kernel_size; i++){
