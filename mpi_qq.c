@@ -2207,8 +2207,8 @@ int main(int argc, char**argv){
             convolve_2B(img_to_convolve, lr, lc, kernel, kernel_size, res);
             //res = img_to_convolve;
             cut_result_2B(res, my_img, sub_mat_sizes, kernel_size);
-            if ( I_M_LITTLE_ENDIAN ) swap_image( res, lc, lr, maxval);
-             if (grid_rank == 2) write_pgm_image(res, maxval, lc, lr, "ff.pgm");
+            //if ( I_M_LITTLE_ENDIAN ) swap_image( res, lc, lr, maxval);
+            // if (grid_rank == 2) write_pgm_image(res, maxval, lc, lr, "ff.pgm");
             //printf("sq %d %p %p %p %p\n",grid_rank, QQ[0], QQ[1], QQ[2], QQ[3]);
             ////printf("halo %d %p %p %p %p\n",grid_rank, HALOS[0], HALOS[1], HALOS[2], HALOS[3]);
           
