@@ -1,6 +1,6 @@
 #!/bin/bash
 
-mpi_source="mpi_qq.c"
+mpi_source="mpi_qq_scatter.c"
 omp_source="omp_double_3.c"
 
 mpicc -O3 -march=native $mpi_source -o blur_mpi -lm
