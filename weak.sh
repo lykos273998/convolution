@@ -12,8 +12,8 @@ gcc read_write_pgm_image.c -o rw
 kernel_size=101
 kernel_type="1"
 w="0.2"
-mpi_path_="timing/mpi/weak"
-omp_path_="timing/omp/weak"
+mpi_path_="timing/mpi/weak/"
+omp_path_="timing/omp/weak/"
 
 ./rw 65535 2000 2000
 procs=1
