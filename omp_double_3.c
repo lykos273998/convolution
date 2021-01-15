@@ -930,24 +930,25 @@ int main(int argc, char**argv){
     if(kernel_type == 1){
         //free(format);
         format = "%s.b_%d_%dx%d_0%1.0lf.pgm";
-        if(argc>5){sprintf(of,"%s",argv[5]);}
-        else{
+        
+        
         w = atof(argv[3]);
         input_file = argv[4];
         cut_name(input_file, on);
         sprintf(of,format, on, kernel_type, kernel_size,kernel_size, w);
-        }
+        
+        if(argc>5){sprintf(of,"%s",argv[5]);}
         
     }
     else
     {
         format = "%s.b_%d_%dx%d.pgm";
-        if(argc > 4){sprintf(of,"%s",argv[4]);}
-        else{
+        
+        
         input_file = argv[3];
         cut_name(input_file, on);
         sprintf(of,format, on, kernel_type, kernel_size,kernel_size);
-        }
+        if(argc > 4){sprintf(of,"%s",argv[4]);}
         
         
     }
