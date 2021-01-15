@@ -241,24 +241,17 @@ void get_SHARPEN_kernel(double* kernel, unsigned int kernel_size){
 
 void convolve_1B(unsigned char * source,int nrows,int ncols,double * kernel, int kernel_size, unsigned char *result){
     
-    //printf("S %d \n", s);
-    
-    //interior convolution
-
     #pragma omp parallel 
     {
     int k_i_start, k_i_end, k_j_start, k_j_end, img_index, res_index, k_index;
     double tmp;
     int s = kernel_size/2;
     
-    //printf("Processing Interior\n");
-    //int ns = nrows/omp_get_num_threads();
     int ns = s;
     int nrs = nrows/omp_get_num_threads();
     int remainder = nrows - s - ((nrows - 2*s) % nrs);
     int remainder_cols = ncols - s - ((ncols - 2*s) % ns);
-    //printf("remainder %d", (remainder - s)%ns);
-    //printf("Processing Interior\n");
+   
     #pragma omp for nowait
     for(int cc = s; cc < remainder; cc+=nrs){   
         for(int dd = s; dd < remainder_cols; dd+=ns){
@@ -278,9 +271,7 @@ void convolve_1B(unsigned char * source,int nrows,int ncols,double * kernel, int
         }
         }
             result[res_index] = (unsigned char)tmp;
-           // printf("%f ", tmp);
-
-
+        
     }  
     }
     }
@@ -569,9 +560,6 @@ void convolve_1B(unsigned char * source,int nrows,int ncols,double * kernel, int
 
 void convolve_2B(unsigned short * source,int nrows,int ncols,double * kernel, int kernel_size, unsigned short *result){
     
-    //printf("S %d \n", s);
-    
-    //interior convolution
 
     #pragma omp parallel 
     {
@@ -579,14 +567,11 @@ void convolve_2B(unsigned short * source,int nrows,int ncols,double * kernel, in
     double tmp;
     int s = kernel_size/2;
     
-    //printf("Processing Interior\n");
-    //int ns = nrows/omp_get_num_threads();
     int ns = s;
     int nrs = nrows/omp_get_num_threads();
     int remainder = nrows - s - ((nrows - 2*s) % nrs);
     int remainder_cols = ncols - s - ((ncols - 2*s) % ns);
-    //printf("remainder %d", (remainder - s)%ns);
-    //printf("Processing Interior\n");
+    
     #pragma omp for nowait
     for(int cc = s; cc < remainder; cc+=nrs){   
         for(int dd = s; dd < remainder_cols; dd+=ns){
@@ -606,7 +591,7 @@ void convolve_2B(unsigned short * source,int nrows,int ncols,double * kernel, in
         }
         }
             result[res_index] = tmp;
-           // printf("%f ", tmp);
+           
 
 
     }  
@@ -629,7 +614,7 @@ void convolve_2B(unsigned short * source,int nrows,int ncols,double * kernel, in
         }
         }
             result[res_index] = tmp;
-           // printf("%f ", tmp);
+           
 
 
     } 
@@ -639,16 +624,13 @@ void convolve_2B(unsigned short * source,int nrows,int ncols,double * kernel, in
 
     
     
-    //double tmp = 0.;
-    
-    //remainder
     #pragma omp for schedule(dynamic,ns) nowait
         for(int i = remainder; i < nrows - s; i++){
                 for(int j = s; j < ncols - s; j++){
                     res_index = i*ncols + j;
                     result[res_index] = 0;
                     tmp = 0.;
-                    //single element
+                    
                     for (int k_i = 0; k_i < kernel_size; k_i ++ ){
                     for (int k_j = 0; k_j < kernel_size; k_j ++ ){  
                         k_index = k_i * kernel_size + k_j;
@@ -661,13 +643,6 @@ void convolve_2B(unsigned short * source,int nrows,int ncols,double * kernel, in
     }
     
     
-    //img_index, k_index, res_index;
-    //halo up
-    //printf("Processing HALO UP\n");
-    
-    
-    
-    //printf("Processing HALO UP\n");
     #pragma omp for schedule(dynamic,ns) nowait
     for(int i = 0; i <s; i++){
         for(int j = s; j < ncols - s; j++){
@@ -911,8 +886,9 @@ void cut_name(char* source, char* dest){
     while(source[slash] != '/'){
         //printf("%c ", source[slash]);
         slash = slash - 1;
+        if(slash == 0){break;}
     }
-    slash++;
+    if(slash!=0){slash++;}
 
     for(int i = slash; i < pgm; i++){
         dest[i - slash] = source[i];
@@ -954,22 +930,26 @@ int main(int argc, char**argv){
     if(kernel_type == 1){
         //free(format);
         format = "%s.b_%d_%dx%d_0%1.0lf.pgm";
+        if(argc>5){sprintf(of,"%s",argv[5]);}
+        else{
         w = atof(argv[3]);
         input_file = argv[4];
         cut_name(input_file, on);
         sprintf(of,format, on, kernel_type, kernel_size,kernel_size, w);
+        }
         
-
-        if(argc>5){sprintf(of,"%s",argv[5]);}
     }
     else
     {
         format = "%s.b_%d_%dx%d.pgm";
+        if(argc > 4){sprintf(of,"%s",argv[4]);}
+        else{
         input_file = argv[3];
         cut_name(input_file, on);
         sprintf(of,format, on, kernel_type, kernel_size,kernel_size);
+        }
         
-        if(argc > 4){sprintf(of,"%s",argv[4]);}
+        
     }
     char* out_file = of;
     

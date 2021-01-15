@@ -40,8 +40,10 @@ void cut_name(char* source, char* dest){
     while(source[slash] != '/'){
         //printf("%c ", source[slash]);
         slash = slash - 1;
+        if(slash == 0){break;}
     }
-    slash++;
+    if(slash!=0){slash++;}
+    
 
     for(int i = slash; i < pgm; i++){
         dest[i - slash] = source[i];
@@ -1938,28 +1940,34 @@ int main(int argc, char**argv){
     char of[120];
     char on[120];
     
-    
-    if(kernel_type == 1){
+     if(kernel_type == 1){
         //free(format);
         format = "%s.b_%d_%dx%d_0%1.0lf.pgm";
+        
+        
         w = atof(argv[3]);
         input_file = argv[4];
         cut_name(input_file, on);
         sprintf(of,format, on, kernel_type, kernel_size,kernel_size,10*w);
-        
-
         if(argc>5){sprintf(of,"%s",argv[5]);}
+        
+        
     }
     else
     {
         format = "%s.b_%d_%dx%d.pgm";
+        
+        
+       
         input_file = argv[3];
         cut_name(input_file, on);
         sprintf(of,format, on, kernel_type, kernel_size,kernel_size);
         
         if(argc > 4){sprintf(of,"%s",argv[4]);}
+        
+        
+        
     }
-
     char* out_file = of;
 
     if (I_AM_MASTER) printf("%s\n", out_file);
