@@ -9,7 +9,7 @@ These are the commands:
 
 - *MPI version*: `mpicc mpi_qq_scatter.c -lm`
 
-- *openMP version*: `gcc -fopenmp omp_conv.c -lm`
+- *openMP version*: `gcc -fopenmp omp_double_3.c -lm`
 
 - complie it by running `compile.sh`, produces 2 executables, `blur_mpi`, `blur_mp`
 
