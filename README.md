@@ -1,4 +1,5 @@
 # Convolution
+## The code written is higly experimental and bad written
 Assignement 02 for the HPC course @ University of Trieste, DSSC master degree
 ## Project
 This project is an implemetation of a convolution algorithm using openmpi and openmp
