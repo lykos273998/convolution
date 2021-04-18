@@ -1,5 +1,5 @@
 # Convolution
-## The code written is higly experimental and bad written
+## The code written is higly experimental and bad written, not mantained
 Assignement 02 for the HPC course @ University of Trieste, DSSC master degree
 ## Project
 This project is an implemetation of a convolution algorithm using openmpi and openmp
@@ -7,9 +7,11 @@ This project is an implemetation of a convolution algorithm using openmpi and op
 To compile use the script provided or the makefile
 These are the commands:
 
-- *MPI version*: `mpicc mpi_conv.c -lm`
+- *MPI version*: `mpicc mpi_qq_scatter.c -lm`
 
 - *openMP version*: `gcc -fopenmp omp_conv.c -lm`
+
+- complie it by running `compile.sh`, produces 2 executables, `blur_mpi`, `blur_mp`
 
 ## How to RUN
 
